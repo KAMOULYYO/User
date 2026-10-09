@@ -213,10 +213,12 @@
     document.body.classList.remove("is-loading");
     document.body.classList.add("is-loaded");
     document.documentElement.classList.add("has-smooth");
-    setSlide(0, true);
+    try { setSlide(0, true); } catch (err) { console.error(err); }
     emit("loaded");
   };
   window.addEventListener("load", () => { pageReady = true; });
+  // don't wait forever for slow third-party resources: show the site after 3 s max
+  setTimeout(() => { pageReady = true; }, 3000);
 
   /* ------------------------------------------------------------------------
      HERO

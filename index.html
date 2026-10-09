@@ -7,10 +7,17 @@
   <meta name="description" content="NUTRISPORT : whey protein, isolate, créatine monohydrate, pre-workout et mass gainer. Nutrition sportive premium, ingrédients testés, livraison 48h." />
   <meta name="theme-color" content="#0d0d0d" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0d0d'/%3E%3Ctext x='32' y='44' font-family='Arial Black,Arial' font-weight='900' font-size='30' text-anchor='middle' fill='%23c9a45c'%3EN%3C/text%3E%3C/svg%3E" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Fonts are self-hosted: no external request can block the page -->
+  <link rel="preload" href="assets/fonts/anton-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="assets/css/styles.css" />
+  <script>
+    /* Failsafe: never leave visitors stuck on the loading screen, even if a script fails */
+    setTimeout(function () {
+      var b = document.body;
+      if (b && b.classList.contains("is-loading")) { b.classList.remove("is-loading"); b.classList.add("is-loaded"); }
+    }, 7000);
+  </script>
   <script type="importmap">{ "imports": { "three": "./assets/vendor/three/three.module.min.js" } }</script>
 </head>
 <body class="is-loading">

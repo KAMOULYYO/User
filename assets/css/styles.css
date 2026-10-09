@@ -35,6 +35,17 @@
   --shadow-soft: 0 30px 60px -30px rgba(40, 30, 10, .25), 0 10px 25px -15px rgba(40, 30, 10, .15);
 }
 
+@font-face {
+  font-family: "Anton";
+  src: url("../fonts/anton-latin.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("../fonts/inter-latin-var.woff2") format("woff2-variations"), url("../fonts/inter-latin-var.woff2") format("woff2");
+  font-weight: 100 900; font-style: normal; font-display: swap;
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; overflow-x: clip; }
 html.has-smooth { scroll-behavior: smooth; }
