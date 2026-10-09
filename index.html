@@ -11,14 +11,34 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/styles.css" />
+  <script type="importmap">{ "imports": { "three": "./assets/vendor/three/three.module.min.js" } }</script>
 </head>
 <body class="is-loading">
 
   <!-- Preloader -->
   <div class="preloader" aria-hidden="true">
+    <div class="preloader-jar">
+      <svg viewBox="0 0 120 150">
+        <defs>
+          <clipPath id="preJarClip"><rect x="14" y="38" width="92" height="104" rx="16"/></clipPath>
+          <linearGradient id="prePowder" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2c88f"/><stop offset="1" stop-color="#9a7234"/></linearGradient>
+        </defs>
+        <g clip-path="url(#preJarClip)">
+          <g class="preloader-fill"><path d="M0 0 Q15 -6 30 0 T60 0 T90 0 T120 0 T150 0 T180 0 V160 H0 Z" fill="url(#prePowder)"/></g>
+        </g>
+        <rect x="14" y="38" width="92" height="104" rx="16" fill="none" stroke="#f4f1ec" stroke-width="2.5"/>
+        <rect class="preloader-lid" x="22" y="12" width="76" height="22" rx="6" fill="none" stroke="#c9a45c" stroke-width="2.5"/>
+      </svg>
+      <span class="preloader-pct"><b id="prePct">0</b>%</span>
+    </div>
     <div class="preloader-word"><span>N</span><span>U</span><span>T</span><span>R</span><span>I</span><span>S</span><span>P</span><span>O</span><span>R</span><span>T</span></div>
-    <div class="preloader-bar"><i></i></div>
   </div>
+
+  <!-- Page transition curtain -->
+  <div class="curtain" aria-hidden="true"><span class="curtain-logo">NUTRISPORT</span></div>
+
+  <!-- Powder cursor trail -->
+  <canvas class="trail" id="trail" aria-hidden="true"></canvas>
 
   <!-- Custom cursor (desktop only) -->
   <div class="cursor" aria-hidden="true"><span class="cursor-dot"></span><span class="cursor-ring"></span></div>
@@ -30,12 +50,17 @@
     </a>
     <nav class="nav-links" id="navLinks" aria-label="Navigation principale">
       <a href="#produits">Produits</a>
-      <a href="#marque">La marque</a>
-      <a href="#benefices">Bénéfices</a>
+      <a href="#stack">Stack</a>
+      <a href="#lab">Le Lab</a>
+      <a href="#gold">Gold</a>
       <a href="#avis">Avis</a>
       <a href="#faq">FAQ</a>
     </nav>
     <div class="nav-actions">
+      <button class="icon-btn sound-btn" id="soundBtn" aria-label="Activer le son" aria-pressed="false">
+        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4z"/><path class="sound-on" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/><path class="sound-off" d="m16 9.5 5 5m0-5-5 5"/></svg>
+        <span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
       <button class="icon-btn" id="cartBtn" aria-label="Ouvrir le panier">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 7Z"/><path d="M9 7V6a3 3 0 0 1 6 0v1"/></svg>
         <span class="cart-count" id="cartCount">0</span>
@@ -69,6 +94,8 @@
 
         <div class="hero-product" id="heroProduct">
           <div class="hero-jars" id="heroJars"><!-- jars injected by JS --></div>
+          <div class="jar3d" id="heroJar3d" aria-hidden="true"></div>
+          <span class="drag-hint" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 12H3m0 0 3-3m-3 3 3 3M16 12h5m0 0-3-3m3 3-3 3"/></svg> Glisser pour tourner 360°</span>
           <div class="hero-shadow" aria-hidden="true"></div>
         </div>
 
@@ -94,6 +121,7 @@
         <div class="hero-product-info reveal-hero">
           <div class="hero-product-name" id="heroName">Whey Protein</div>
           <div class="hero-product-meta"><span id="heroFlavor">Chocolat Belge · 2 kg</span><span class="sep"></span><span class="hero-price" id="heroPrice">54,90 €</span></div>
+          <div class="hero-flavors" id="heroFlavors" role="radiogroup" aria-label="Choisir un goût"></div>
         </div>
         <div class="hero-ctas reveal-hero">
           <button class="btn btn--primary magnetic" id="heroBuy">
@@ -116,6 +144,30 @@
         <span>WHEY PROTEIN</span><b>✦</b><span>ISOLATE</span><b>✦</b><span>CREATINE</span><b>✦</b><span>PRE-WORKOUT</span><b>✦</b><span>MASS GAINER</span><b>✦</b>
       </div>
     </div>
+
+    <!-- STORY (scroll-driven) -->
+    <section class="story" id="formule" data-nav="dark">
+      <div class="story-sticky">
+        <canvas class="story-canvas" id="storyCanvas" aria-hidden="true"></canvas>
+        <div class="story-stage" aria-hidden="true">
+          <div class="story-jar" id="storyJar">
+            <svg class="story-lid" id="storyLid" viewBox="0 0 200 60"><defs><linearGradient id="slg" x1="0" x2="1"><stop offset="0" stop-color="#8a6a2e"/><stop offset=".3" stop-color="#f0d9a0"/><stop offset=".55" stop-color="#c9a45c"/><stop offset="1" stop-color="#6e5222"/></linearGradient><pattern id="slr" width="6" height="10" patternUnits="userSpaceOnUse"><rect width="2.5" height="10" fill="#000" opacity=".2"/></pattern></defs><rect x="4" y="4" width="192" height="52" rx="12" fill="url(#slg)"/><rect x="4" y="10" width="192" height="40" fill="url(#slr)"/></svg>
+            <svg class="story-body" viewBox="0 0 220 250"><defs><linearGradient id="sbg" x1="0" x2="1"><stop offset="0" stop-color="#000"/><stop offset=".25" stop-color="#2a2a2a"/><stop offset=".32" stop-color="#4a4a4a"/><stop offset=".45" stop-color="#1a1a1a"/><stop offset="1" stop-color="#000"/></linearGradient></defs><rect x="6" y="0" width="208" height="16" rx="5" fill="#0a0a0a"/><rect x="0" y="10" width="220" height="240" rx="30" fill="url(#sbg)"/><rect x="0" y="80" width="220" height="3" fill="#c9a45c"/><rect x="0" y="190" width="220" height="3" fill="#c9a45c"/><text x="110" y="112" text-anchor="middle" font-family="Inter,Arial" font-weight="800" font-size="11" letter-spacing="5" fill="#c9a45c">NUTRISPORT</text><text x="110" y="160" text-anchor="middle" font-family="Anton,Impact" font-size="44" fill="#f4efe6">WHEY</text><text x="110" y="182" text-anchor="middle" font-family="Anton,Impact" font-size="17" letter-spacing="4" fill="#f4efe6">PROTEIN</text></svg>
+          </div>
+          <div class="story-shaker" id="storyShaker">
+            <svg viewBox="0 0 160 300"><defs><clipPath id="shClip"><path d="M22 70 L32 286 Q33 296 44 296 H116 Q127 296 128 286 L138 70 Z"/></clipPath><linearGradient id="shGlass" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".25" stop-color="#fff" stop-opacity=".55"/><stop offset=".4" stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity=".25"/></linearGradient></defs><rect x="40" y="6" width="80" height="22" rx="8" fill="#1d1d1d"/><rect x="14" y="26" width="132" height="46" rx="10" fill="#151515"/><rect x="14" y="40" width="132" height="4" fill="#c6ff3d"/><g clip-path="url(#shClip)"><rect id="shLiquid" x="0" y="296" width="160" height="240" fill="#6b4228"/></g><path d="M22 70 L32 286 Q33 296 44 296 H116 Q127 296 128 286 L138 70 Z" fill="url(#shGlass)" stroke="rgba(255,255,255,.5)" stroke-width="2"/><text x="80" y="200" text-anchor="middle" font-family="Anton,Impact" font-size="20" letter-spacing="2" fill="rgba(255,255,255,.55)">NUTRISPORT</text></svg>
+          </div>
+        </div>
+        <div class="story-captions">
+          <div class="story-cap is-on"><span>01</span><h3>Ouvrez le pot.</h3><p>Une poudre ultra-fine, micro-filtrée, qui se dissout en 5 secondes.</p></div>
+          <div class="story-cap"><span>02</span><h3>Libérez la puissance.</h3><p>Chaque dose concentre des protéines de lactosérum européennes testées en laboratoire.</p></div>
+          <div class="story-cap"><span>03</span><h3>25 g de protéines.</h3><p>Par dose. Avec 5,5 g de BCAA naturels et zéro sucre ajouté.</p></div>
+          <div class="story-cap"><span>04</span><h3>Shakez. Performez.</h3><p>Un shaker onctueux, prêt en 10 secondes, pour une récupération optimale.</p></div>
+        </div>
+        <div class="story-progress"><i id="storyBar"></i></div>
+        <p class="story-hint">Scrollez pour ouvrir le pot ↓</p>
+      </div>
+    </section>
 
     <!-- 2. PRODUITS -->
     <section class="section products" id="produits">
@@ -176,7 +228,7 @@
     </section>
 
     <!-- 4. BÉNÉFICES (pinned horizontal scroll) -->
-    <section class="benefits" id="benefices">
+    <section class="benefits" id="benefices" data-nav="dark">
       <div class="benefits-sticky">
         <div class="benefits-head">
           <p class="eyebrow"><span class="dot"></span> Bénéfices produits</p>
@@ -228,6 +280,117 @@
       </div>
     </section>
 
+    <!-- STACK FINDER -->
+    <section class="section quiz" id="stack">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <p class="eyebrow reveal"><span class="dot"></span> Stack finder</p>
+          <h2 class="section-title reveal">Trouve ton<br /><span class="gold">stack parfait.</span></h2>
+          <p class="section-lead reveal">3 questions, 20 secondes. On compose le pack idéal pour ton objectif, avec <b>-15 %</b> sur le pack.</p>
+        </div>
+        <div class="quiz-card reveal" id="quiz">
+          <div class="quiz-top">
+            <button class="quiz-back" id="quizBack" aria-label="Question précédente">← Retour</button>
+            <div class="quiz-progress"><i id="quizBar"></i></div>
+            <span class="quiz-count" id="quizCount">1 / 3</span>
+          </div>
+          <div class="quiz-viewport">
+            <div class="quiz-step is-active" data-step="0">
+              <h3>Quel est ton objectif&nbsp;?</h3>
+              <div class="quiz-options quiz-options--4">
+                <button class="quiz-opt" data-name="goal" data-value="masse"><span class="quiz-ico">💪</span><b>Prise de masse</b><small>Volume &amp; densité</small></button>
+                <button class="quiz-opt" data-name="goal" data-value="seche"><span class="quiz-ico">🔥</span><b>Sèche</b><small>Définition musculaire</small></button>
+                <button class="quiz-opt" data-name="goal" data-value="force"><span class="quiz-ico">🏋️</span><b>Force</b><small>Puissance &amp; records</small></button>
+                <button class="quiz-opt" data-name="goal" data-value="energie"><span class="quiz-ico">⚡</span><b>Énergie</b><small>Endurance &amp; focus</small></button>
+              </div>
+            </div>
+            <div class="quiz-step" data-step="1">
+              <h3>Combien de séances par semaine&nbsp;?</h3>
+              <div class="quiz-options quiz-options--3">
+                <button class="quiz-opt" data-name="freq" data-value="1"><span class="quiz-big">1–2</span><small>Je débute</small></button>
+                <button class="quiz-opt" data-name="freq" data-value="2"><span class="quiz-big">3–4</span><small>Régulier</small></button>
+                <button class="quiz-opt" data-name="freq" data-value="3"><span class="quiz-big">5+</span><small>Intensif</small></button>
+              </div>
+            </div>
+            <div class="quiz-step" data-step="2">
+              <h3>Quel est ton poids&nbsp;?</h3>
+              <div class="quiz-weight">
+                <output class="quiz-weight-val" id="quizWeightVal">75<small>kg</small></output>
+                <input type="range" id="quizWeight" min="45" max="130" value="75" aria-label="Poids en kilogrammes" />
+                <div class="quiz-weight-scale"><span>45 kg</span><span>130 kg</span></div>
+              </div>
+              <button class="btn btn--dark quiz-reveal-btn magnetic" id="quizReveal"><span>Révéler mon stack</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
+            <div class="quiz-step quiz-result" data-step="3" id="quizResult"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LE LAB -->
+    <section class="section lab" id="lab">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow reveal"><span class="dot"></span> Le Lab</p>
+            <h2 class="section-title reveal">Calcule.<br /><span class="muted">Shake. Performe.</span></h2>
+          </div>
+          <p class="section-lead reveal">Calcule tes besoins en protéines et prépare ton shaker virtuel avec ton goût préféré.</p>
+        </div>
+        <div class="lab-grid">
+          <article class="lab-card calc reveal" id="calc">
+            <h3>Calculateur de protéines</h3>
+            <div class="calc-gauge">
+              <svg viewBox="0 0 220 130"><defs><linearGradient id="gaugeG" x1="0" x2="1"><stop offset="0" stop-color="#c9a45c"/><stop offset="1" stop-color="#c6ff3d"/></linearGradient></defs><path d="M20 120 A90 90 0 0 1 200 120" fill="none" stroke="rgba(13,13,13,.08)" stroke-width="16" stroke-linecap="round"/><path id="gaugeArc" d="M20 120 A90 90 0 0 1 200 120" fill="none" stroke="url(#gaugeG)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/></svg>
+              <div class="calc-value"><b id="calcProtein">0</b><span>g de protéines / jour</span></div>
+            </div>
+            <label class="calc-label" for="calcWeight">Poids <output id="calcWeightVal">75 kg</output></label>
+            <input type="range" id="calcWeight" min="40" max="140" value="75" />
+            <span class="calc-label">Objectif</span>
+            <div class="seg" id="calcGoal" role="radiogroup">
+              <button data-f="1.6" class="is-active">Maintien</button><button data-f="2">Masse</button><button data-f="2.2">Sèche</button><button data-f="1.8">Force</button>
+            </div>
+            <div class="calc-results">
+              <div><b id="calcDoses">0</b><span>dose(s) de whey / jour</span></div>
+              <div><b id="calcCrea">0</b><span>g de créatine / jour</span></div>
+              <div><b id="calcWater">0</b><span>L d'eau / jour</span></div>
+            </div>
+            <p class="calc-note">Valeurs indicatives pour un adulte sportif en bonne santé. Demandez conseil à un professionnel de santé en cas de doute.</p>
+          </article>
+          <article class="lab-card shaker-lab reveal" id="shakerLab">
+            <h3>Simulateur de shaker</h3>
+            <div class="shaker-stage">
+              <div class="shaker-glow"></div>
+              <div class="shaker" id="shaker">
+                <svg viewBox="0 0 160 300">
+                  <defs>
+                    <clipPath id="labShClip"><path d="M22 70 L32 286 Q33 296 44 296 H116 Q127 296 128 286 L138 70 Z"/></clipPath>
+                    <linearGradient id="labGlass" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".25"/><stop offset=".22" stop-color="#fff" stop-opacity=".7"/><stop offset=".36" stop-color="#fff" stop-opacity=".1"/><stop offset="1" stop-color="#fff" stop-opacity=".3"/></linearGradient>
+                  </defs>
+                  <g class="shaker-cap"><rect x="40" y="6" width="80" height="22" rx="8" fill="#1d1d1d"/><rect x="14" y="26" width="132" height="46" rx="10" fill="#121212"/><rect x="14" y="40" width="132" height="4" fill="#c9a45c"/></g>
+                  <g clip-path="url(#labShClip)">
+                    <g class="shaker-liquid" id="labLiquid">
+                      <path class="wave wave--back" d="M0 0 Q20 -8 40 0 T80 0 T120 0 T160 0 T200 0 T240 0 T280 0 T320 0 V260 H0 Z"/>
+                      <path class="wave wave--front" d="M0 0 Q20 -8 40 0 T80 0 T120 0 T160 0 T200 0 T240 0 T280 0 T320 0 V260 H0 Z"/>
+                    </g>
+                    <g class="shaker-foam" id="labFoam"></g>
+                  </g>
+                  <path d="M22 70 L32 286 Q33 296 44 296 H116 Q127 296 128 286 L138 70 Z" fill="url(#labGlass)" stroke="rgba(13,13,13,.25)" stroke-width="2"/>
+                  <g fill="rgba(13,13,13,.35)" font-family="Inter,Arial" font-size="8" font-weight="700"><rect x="120" y="120" width="10" height="1.5"/><text x="104" y="123">600</text><rect x="122" y="170" width="8" height="1.5"/><text x="104" y="173">400</text><rect x="124" y="220" width="6" height="1.5"/><text x="104" y="223">200</text></g>
+                </svg>
+              </div>
+              <span class="shaker-status" id="shakerStatus">Choisis ton goût</span>
+            </div>
+            <div class="chips shaker-flavors" id="shakerFlavors"></div>
+            <div class="shaker-actions">
+              <button class="btn btn--dark" id="shakerFill"><span>Préparer</span></button>
+              <button class="btn btn--neon" id="shakerShake" disabled><span>Secouer 🔥</span></button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
     <!-- 5. TÉMOIGNAGES -->
     <section class="section reviews" id="avis">
       <div class="container">
@@ -246,6 +409,31 @@
         </div>
       </div>
       <div class="reviews-rows" id="reviewsRows"><!-- injected --></div>
+    </section>
+
+    <!-- GOLD LIMITED EDITION -->
+    <section class="gold-edition" id="gold" data-nav="dark">
+      <div class="gold-bg" aria-hidden="true"><span>GOLD</span></div>
+      <div class="container gold-layout">
+        <div class="gold-content">
+          <p class="eyebrow reveal"><span class="dot"></span> Édition limitée</p>
+          <h2 class="gold-title reveal">NUTRISPORT<br /><em>GOLD</em></h2>
+          <p class="gold-lead reveal">Notre whey isolate signature dans un pot doré numéroté. Saveur exclusive « Vanille de Madagascar &amp; caramel ». Seulement <b>2 026 pots</b> numérotés.</p>
+          <div class="countdown reveal" id="countdown" aria-live="off">
+            <div><b data-cd="d">00</b><span>Jours</span></div>
+            <div><b data-cd="h">00</b><span>Heures</span></div>
+            <div><b data-cd="m">00</b><span>Min</span></div>
+            <div><b data-cd="s">00</b><span>Sec</span></div>
+          </div>
+          <p class="gold-date reveal" id="goldDate">Drop le 27 novembre 2026 à 10h</p>
+          <button class="btn btn--gold reveal magnetic" id="goldNotify"><span>Me prévenir du drop</span></button>
+        </div>
+        <div class="gold-visual">
+          <div class="gold-ring" aria-hidden="true"></div>
+          <div class="gold-jar" id="goldJar"><div class="gold-jar-fallback" id="goldJarFallback"></div></div>
+          <span class="drag-hint drag-hint--light" aria-hidden="true">Glisser pour tourner 360°</span>
+        </div>
+      </div>
     </section>
 
     <!-- 6. FAQ -->
@@ -281,7 +469,7 @@
   </main>
 
   <!-- 7. FOOTER -->
-  <footer class="footer">
+  <footer class="footer" data-nav="dark">
     <div class="container">
       <div class="footer-top">
         <div class="footer-brand">
@@ -295,7 +483,7 @@
           </div>
         </div>
         <div class="footer-cols">
-          <div><h4>Boutique</h4><a href="#produits">Whey Protein</a><a href="#produits">Isolate</a><a href="#produits">Créatine</a><a href="#produits">Pre-Workout</a><a href="#produits">Mass Gainer</a></div>
+          <div><h4>Boutique</h4><a href="#stack">Trouve ton stack</a><a href="#produits">Whey Protein</a><a href="#produits">Isolate</a><a href="#produits">Créatine</a><a href="#produits">Pre-Workout</a><a href="#produits">Mass Gainer</a></div>
           <div><h4>Marque</h4><a href="#marque">Notre histoire</a><a href="#marque">Qualité &amp; labo</a><a href="#avis">Athlètes</a><a href="#">Programme ambassadeur</a></div>
           <div><h4>Aide</h4><a href="#faq">FAQ</a><a href="#">Livraison &amp; retours</a><a href="#">Suivi de commande</a><a href="mailto:hello@nutrisport.fr">hello@nutrisport.fr</a></div>
         </div>
@@ -332,5 +520,10 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="assets/js/main.js"></script>
+  <script src="assets/js/sfx.js"></script>
+  <script src="assets/js/fx.js"></script>
+  <script src="assets/js/story.js"></script>
+  <script src="assets/js/lab.js"></script>
+  <script type="module" src="assets/js/jar3d.js"></script>
 </body>
 </html>

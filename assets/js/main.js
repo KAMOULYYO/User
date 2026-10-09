@@ -63,6 +63,28 @@
     },
   };
 
+  PRODUCTS.gold = {
+    name: "NUTRISPORT Gold", l1: "GOLD", l2: "ISOLATE", word: "GOLD", tag: "Édition limitée", metal: true,
+    desc: "Whey isolate signature, pot doré numéroté.",
+    flavors: ["Vanille de Madagascar"], sizes: [{ l: "1,5 kg", p: 79.9 }], defSize: 0, rating: 5, reviews: 0,
+    c: { jar: "#c9a45c", label: "#0d0d0d", ink: "#ecd49c", accent: "#c9a45c", lid: "#0d0d0d", card: "#1a1a1a" },
+    badges: [["2026", "pots numérotés"], ["90%", "protéines"]],
+  };
+
+  /* Each flavour has its own colour (powder, shaker liquid, label band) */
+  const FLAVOR_COLORS = {
+    "Chocolat Belge": "#5b3a26", "Vanille Bourbon": "#e6cf98", "Caramel Salé": "#c0803c", "Fraise": "#e0647a",
+    "Chocolat Noir": "#3a2418", "Cookies": "#a8865e", "Neutre": "#dcdcd6", "Citron": "#f2d43a",
+    "Fruits rouges": "#b8304a", "Citron Yuzu": "#e2dc3c", "Fruit du dragon": "#e0408a", "Cola glacé": "#5a2a1a",
+    "Cookies & Cream": "#8a8178", "Chocolat": "#6b4228", "Banane": "#f0d860", "Vanille de Madagascar": "#ecd49c",
+  };
+  const flavorColor = (f) => FLAVOR_COLORS[f] || "#c9a45c";
+
+  /* Tiny event bus shared with the effect modules (3D jar, story, lab…) */
+  const bus = new EventTarget();
+  const emit = (type, detail) => bus.dispatchEvent(new CustomEvent(type, { detail }));
+  const sfx = (name) => { try { window.NS && window.NS.sfx && window.NS.sfx.play(name); } catch (_) { /* audio unavailable */ } };
+
   /* Hero slides & their colour themes */
   const SLIDES = [
     { key: "whey", word: "PROTEIN", theme: "protein", bg: "#ece5da", giant: "#d9cbb3", ink: "#0d0d0d", accent: "#b48a3e", glow: "rgba(201,164,92,.42)", powder: "#7a4b2e", particles: "#7a4b2e" },
@@ -170,6 +192,21 @@
      ------------------------------------------------------------------------ */
   $$(".preloader-word span").forEach((s, i) => s.style.setProperty("--i", i));
   let loaded = false;
+  let pageReady = false;
+  const preFill = $(".preloader-fill");
+  const prePct = $("#prePct");
+  const preStart = performance.now();
+  const PRE_MIN = reduceMotion ? 0 : 1500;
+  (function preTick(now) {
+    // the jar fills with powder; it waits at 90 % until the page has really loaded
+    const k = clamp((now - preStart) / PRE_MIN, 0, 1);
+    const target = pageReady ? 1 : .9;
+    const v = Math.min(target, 1 - Math.pow(1 - k, 2.2));
+    prePct.textContent = Math.round(v * 100);
+    preFill.style.transform = `translate(${(now / 18) % 60 - 60}px, ${142 - v * 108}px)`;
+    if (v >= 1) return setTimeout(finishLoading, 250);
+    requestAnimationFrame(preTick);
+  })(preStart);
   const finishLoading = () => {
     if (loaded) return;
     loaded = true;
@@ -177,8 +214,9 @@
     document.body.classList.add("is-loaded");
     document.documentElement.classList.add("has-smooth");
     setSlide(0, true);
+    emit("loaded");
   };
-  window.addEventListener("load", () => setTimeout(finishLoading, reduceMotion ? 0 : 1300));
+  window.addEventListener("load", () => { pageReady = true; });
 
   /* ------------------------------------------------------------------------
      HERO
@@ -191,7 +229,9 @@
   const floats = $$(".float");
   const root = document.documentElement;
   let current = -1;
+  let heroFlavorSel = null;
   let autoplayTimer = null;
+  const heroFlavors = $("#heroFlavors");
   const AUTOPLAY = 6000;
   root.style.setProperty("--autoplay", AUTOPLAY + "ms");
 
@@ -237,6 +277,7 @@
     for (const k in vars) root.style.setProperty(k, vars[k]);
     $('meta[name="theme-color"]').setAttribute("content", s.bg);
     particleColor = s.particles;
+    heroFlavorSel = p.flavors[0];
 
     // jars
     const slots = $$(".jar-slot", heroJars);
@@ -270,6 +311,8 @@
     const sz = p.sizes[p.defSize];
     $("#heroFlavor").textContent = `${p.flavors[0]} · ${sz.l}`;
     $("#heroPrice").textContent = euro(sz.p);
+    heroFlavors.innerHTML = p.flavors.map((f, j) =>
+      `<button class="flavor-dot ${j === 0 ? "is-active" : ""}" role="radio" aria-checked="${j === 0}" data-flavor="${f}" style="--c:${flavorColor(f)}" title="${f}"><i></i><span>${f}</span></button>`).join("");
 
     // badges
     const [ba, bb] = [$("#badgeA"), $("#badgeB")];
@@ -290,7 +333,32 @@
     $$("button", dots).forEach((d, idx) => d.classList.toggle("is-active", idx === current));
 
     restartAutoplay();
+    if (!first) sfx("whoosh");
+    emit("slide", { index: current, slide: s, key: s.key, product: p, flavor: heroFlavorSel, first });
   }
+
+  function setHeroFlavor(f) {
+    const s = SLIDES[current];
+    const p = PRODUCTS[s.key];
+    heroFlavorSel = f;
+    $$(".flavor-dot", heroFlavors).forEach((b) => {
+      const on = b.dataset.flavor === f;
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-checked", on);
+    });
+    $("#heroFlavor").textContent = `${f} · ${p.sizes[p.defSize].l}`;
+    // powder, scoop & particles take the flavour colour
+    root.style.setProperty("--powder", flavorColor(f));
+    particleColor = flavorColor(f);
+    $$(".jar-slot", heroJars)[current].querySelectorAll(".jar-flavor").forEach((t) => { t.textContent = f.toUpperCase(); });
+    sfx("click");
+    emit("flavor", { key: s.key, flavor: f, color: flavorColor(f) });
+    restartAutoplay();
+  }
+  heroFlavors.addEventListener("click", (e) => {
+    const b = e.target.closest(".flavor-dot");
+    if (b) setHeroFlavor(b.dataset.flavor);
+  });
 
   function restartAutoplay() {
     clearTimeout(autoplayTimer);
@@ -303,7 +371,12 @@
 
   heroProduct.addEventListener("mouseenter", () => hero.classList.add("is-paused"));
   heroProduct.addEventListener("mouseleave", () => hero.classList.remove("is-paused"));
-  heroProduct.addEventListener("click", () => setSlide(current + 1));
+  let downX = 0;
+  heroProduct.addEventListener("pointerdown", (e) => { downX = e.clientX; });
+  heroProduct.addEventListener("click", (e) => {
+    if (window.NS.has3D || Math.abs(e.clientX - downX) > 6) return; // the 3D jar uses drag-to-rotate
+    setSlide(current + 1);
+  });
 
   // swipe on mobile
   let touchX = null;
@@ -322,7 +395,7 @@
 
   $("#heroBuy").addEventListener("click", (e) => {
     const p = PRODUCTS[SLIDES[current].key];
-    addToCart(SLIDES[current].key, p.flavors[0], p.defSize, e.currentTarget.closest(".hero").querySelector(".jar-slot.is-active svg"));
+    addToCart(SLIDES[current].key, heroFlavorSel || p.flavors[0], p.defSize, e.currentTarget.closest(".hero").querySelector(".jar-slot.is-active svg"));
   });
 
   /* ------------------------------------------------------------------------
@@ -421,7 +494,9 @@
       tilt.y = lerp(tilt.y, pointer.x * 14, .08);
       const sp = clamp(scrollY / vh, 0, 1);
       if (!reduceMotion) {
-        heroProduct.style.transform = `translate3d(${pointer.x * 14}px, ${scrollY * .28}px, 0) scale(${1 - sp * .12}) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`;
+        heroProduct.style.transform = window.NS.has3D
+          ? `translate3d(${pointer.x * 14}px, ${scrollY * .28}px, 0) scale(${1 - sp * .12})`
+          : `translate3d(${pointer.x * 14}px, ${scrollY * .28}px, 0) scale(${1 - sp * .12}) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`;
         heroProduct.style.setProperty("--hx", (pointer.x * 30).toFixed(1));
         root.style.setProperty("--mx", pointer.x.toFixed(3));
         root.style.setProperty("--my", pointer.y.toFixed(3));
@@ -468,9 +543,14 @@
      Nav behaviour
      ------------------------------------------------------------------------ */
   const nav = $("#nav");
-  window.addEventListener("scroll", () => {
+  // the nav turns dark over dark sections
+  const darkSections = $$("[data-nav='dark']");
+  const updateNav = () => {
     nav.classList.toggle("is-scrolled", window.scrollY > 40);
-  }, { passive: true });
+    const y = nav.offsetHeight; // section under the bottom edge of the nav
+    nav.classList.toggle("is-dark", window.scrollY > 40 && darkSections.some((s) => { const r = s.getBoundingClientRect(); return r.top <= y && r.bottom >= y; }));
+  };
+  window.addEventListener("scroll", updateNav, { passive: true });
 
   const burger = $("#burger");
   burger.addEventListener("click", () => {
@@ -557,24 +637,45 @@
   const FREE_SHIPPING = 60;
   let cart = [];
   try { cart = JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch (_) { cart = []; }
-  cart = cart.filter((it) => PRODUCTS[it.key] && PRODUCTS[it.key].sizes[it.size]);
+  cart = cart.filter((it) => PRODUCTS[it.key] && PRODUCTS[it.key].sizes[it.size] && it.key !== "gold");
+  const packPrice = (price, disc) => Math.round(price * (1 - (disc || 0)) * 100) / 100;
+  const unitPrice = (it) => packPrice(PRODUCTS[it.key].sizes[it.size].p, it.disc);
 
   const cartEl = $("#cart");
   const overlay = $("#overlay");
 
   function saveCart() { try { localStorage.setItem(STORE_KEY, JSON.stringify(cart)); } catch (_) { /* storage unavailable */ } }
 
-  function addToCart(key, flavor, size, sourceEl) {
-    const existing = cart.find((it) => it.key === key && it.flavor === flavor && it.size === size);
+  function pushItem(key, flavor, size, disc = 0) {
+    const existing = cart.find((it) => it.key === key && it.flavor === flavor && it.size === size && (it.disc || 0) === disc);
     if (existing) existing.qty++;
-    else cart.push({ key, flavor, size, qty: 1 });
+    else cart.push(disc ? { key, flavor, size, qty: 1, disc } : { key, flavor, size, qty: 1 });
+  }
+  function bumpCart() {
+    renderCart();
+    const count = $("#cartCount");
+    count.classList.remove("bump"); void count.offsetWidth; count.classList.add("bump");
+    sfx("pop");
+  }
+
+  function addToCart(key, flavor, size, sourceEl) {
+    pushItem(key, flavor, size);
     saveCart();
-    flyToCart(sourceEl, () => {
-      renderCart();
-      const count = $("#cartCount");
-      count.classList.remove("bump"); void count.offsetWidth; count.classList.add("bump");
-    });
+    flyToCart(sourceEl, bumpCart);
     toast(`${PRODUCTS[key].name} · ${flavor} ajouté au panier`);
+    emit("cart:add", { key, flavor });
+  }
+
+  /* items: [{key, flavor, size}] — added together with a pack discount */
+  function addPack(items, disc, sourceEls = []) {
+    items.forEach((it) => pushItem(it.key, it.flavor, it.size, disc));
+    saveCart();
+    let pending = Math.max(1, sourceEls.length);
+    const done = () => { if (--pending === 0) bumpCart(); };
+    if (sourceEls.length) sourceEls.forEach((el, i) => setTimeout(() => flyToCart(el, done), i * 140));
+    else done();
+    toast(`Pack de ${items.length} produits ajouté · -${Math.round(disc * 100)} %`);
+    emit("cart:add", { pack: true });
   }
 
   function flyToCart(sourceEl, done) {
@@ -602,7 +703,7 @@
   function renderCart() {
     const items = $("#cartItems");
     const count = cart.reduce((n, it) => n + it.qty, 0);
-    const subtotal = cart.reduce((n, it) => n + PRODUCTS[it.key].sizes[it.size].p * it.qty, 0);
+    const subtotal = cart.reduce((n, it) => n + unitPrice(it) * it.qty, 0);
     $("#cartCount").textContent = count;
     $("#cartHeadCount").textContent = `(${count})`;
     $("#cartSubtotal").textContent = euro(subtotal);
@@ -622,10 +723,10 @@
       const sz = p.sizes[it.size];
       return `<div class="cart-item">
         <div class="cart-thumb" style="--card-bg:${p.c.card}">${jarSVG(it.key, { flavor: it.flavor, size: sz.l })}</div>
-        <div><h4>${p.name}</h4><p>${it.flavor} · ${sz.l}</p>
+        <div><h4>${p.name}</h4><p>${it.flavor} · ${sz.l}${it.disc ? ` <span class="pack-tag">Pack -${Math.round(it.disc * 100)}%</span>` : ""}</p>
           <div class="qty"><button data-dec="${i}" aria-label="Diminuer">−</button><span>${it.qty}</span><button data-inc="${i}" aria-label="Augmenter">+</button></div>
         </div>
-        <div class="cart-item-right"><b>${euro(sz.p * it.qty)}</b><button class="remove" data-rm="${i}">Retirer</button></div>
+        <div class="cart-item-right">${it.disc ? `<s>${euro(sz.p * it.qty)}</s>` : ""}<b>${euro(unitPrice(it) * it.qty)}</b><button class="remove" data-rm="${i}">Retirer</button></div>
       </div>`;
     }).join("");
   }
@@ -659,6 +760,8 @@
   overlay.addEventListener("click", closeCart);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeCart(); });
   $("#checkoutBtn").addEventListener("click", () => toast("Redirection vers le paiement sécurisé… (démo)"));
+
+  $("#cartItems").addEventListener("click", (e) => { if (e.target.closest("[data-inc],[data-dec],[data-rm]")) sfx("click"); });
 
   let toastTimer;
   function toast(msg) {
@@ -786,6 +889,18 @@
   }
 
   /* ------------------------------------------------------------------------
+     Public API for the effect modules
+     ------------------------------------------------------------------------ */
+  window.NS = Object.assign(window.NS || {}, {
+    PRODUCTS, SLIDES, FLAVOR_COLORS, flavorColor, jarSVG, euro, bus, emit, toast, packPrice,
+    addToCart, addPack, openCart, reduceMotion, finePointer, sfx: window.NS && window.NS.sfx,
+    has3D: false,
+    get currentSlide() { return current; },
+    get heroFlavor() { return heroFlavorSel; },
+    pointer,
+  });
+
+  /* ------------------------------------------------------------------------
      Init
      ------------------------------------------------------------------------ */
   sizeCanvas();
@@ -793,5 +908,5 @@
   window.addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(sizeCanvas, 150); });
   renderCart();
   requestAnimationFrame(frame);
-  if (document.readyState === "complete") setTimeout(finishLoading, 300);
+  if (document.readyState === "complete") pageReady = true;
 })();
