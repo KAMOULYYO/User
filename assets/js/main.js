@@ -245,7 +245,7 @@
   const preFill = $(".preloader-fill");
   const prePct = $("#prePct");
   const preStart = performance.now();
-  const PRE_MIN = reduceMotion ? 0 : 1500;
+  const PRE_MIN = reduceMotion ? 0 : 900;
   (function preTick(now) {
     // the jar fills with powder; it waits at 90 % until the page has really loaded
     const k = clamp((now - preStart) / PRE_MIN, 0, 1);
@@ -263,11 +263,12 @@
     document.body.classList.add("is-loaded");
     document.documentElement.classList.add("has-smooth");
     try { setSlide(0, true); } catch (err) { console.error(err); }
+    window.NS.loaded = true;
     emit("loaded");
   };
   window.addEventListener("load", () => { pageReady = true; });
-  // don't wait forever for slow third-party resources: show the site after 3 s max
-  setTimeout(() => { pageReady = true; }, 3000);
+  // the page is usable once the DOM is ready; never wait more than 2 s for slower resources
+  setTimeout(() => { pageReady = true; }, 2000);
 
   /* ------------------------------------------------------------------------
      HERO
@@ -526,56 +527,84 @@
   const benefitsSec = $("#benefices");
   const track = $("#benefitsTrack");
   const benefitEls = $$(".benefit");
+  const benefitParts = benefitEls.map((el) => ({ el, word: el.querySelector(".benefit-word"), body: el.querySelector(".benefit-body") }));
   const bar = $("#benefitsBar");
   const benefitsIdx = $("#benefitsIdx");
+  const heroContent = $(".hero-content");
+  // floating objects are moved directly (no CSS variables on :root, which would restyle the whole page every frame)
+  const floatItems = floats.map((el) => ({ el, d: parseFloat(el.style.getPropertyValue("--d")) || 0 }));
   const isDesktop = () => window.innerWidth > 900;
+
+  // layout cache: reading sizes every frame forces the browser to recompute the layout
+  const L = { vh: innerHeight, heroH: 0, benTop: 0, benH: 0, desktop: isDesktop() };
+  function measureLayout() {
+    L.vh = innerHeight;
+    L.desktop = isDesktop();
+    L.heroH = hero.offsetHeight;
+    L.benTop = benefitsSec.getBoundingClientRect().top + window.scrollY;
+    L.benH = benefitsSec.offsetHeight;
+  }
+  measureLayout();
+  // product filters, FAQ, fonts… change heights: re-measure when the page size changes
+  if (window.ResizeObserver) new ResizeObserver(() => measureLayout()).observe(document.body);
+  window.addEventListener("resize", measureLayout);
 
   window.addEventListener("scroll", () => { scrollY = window.scrollY; }, { passive: true });
 
+  let last = { hero: "", ben: -1, cx: -1, cy: -1, rx: -1, ry: -1 };
   function frame() {
     pointer.x = lerp(pointer.x, pointer.tx, .06);
     pointer.y = lerp(pointer.y, pointer.ty, .06);
 
-    const vh = window.innerHeight;
-    heroOffscreen = scrollY > hero.offsetHeight;
+    const vh = L.vh;
+    heroOffscreen = scrollY > L.heroH;
 
     if (!heroOffscreen) {
-      // tilt + parallax
-      tilt.x = lerp(tilt.x, pointer.y * -9, .08);
-      tilt.y = lerp(tilt.y, pointer.x * 14, .08);
-      const sp = clamp(scrollY / vh, 0, 1);
       if (!reduceMotion) {
-        heroProduct.style.transform = window.NS.has3D
-          ? `translate3d(${pointer.x * 14}px, ${scrollY * .28}px, 0) scale(${1 - sp * .12})`
-          : `translate3d(${pointer.x * 14}px, ${scrollY * .28}px, 0) scale(${1 - sp * .12}) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`;
-        heroProduct.style.setProperty("--hx", (pointer.x * 30).toFixed(1));
-        root.style.setProperty("--mx", pointer.x.toFixed(3));
-        root.style.setProperty("--my", pointer.y.toFixed(3));
-        root.style.setProperty("--sy", (scrollY * .6).toFixed(1));
-        giant.style.setProperty("--gx", `${(-scrollY * .35 + pointer.x * -20).toFixed(1)}px`);
-        $(".hero-content").style.transform = `translate3d(0, ${scrollY * -.12}px, 0)`;
-        $(".hero-content").style.opacity = 1 - sp * 1.4;
+        const key = `${pointer.x.toFixed(3)}|${pointer.y.toFixed(3)}|${scrollY}`;
+        if (key !== last.hero) { // only touch the DOM when the pointer or the scroll moved
+          last.hero = key;
+          tilt.x = lerp(tilt.x, pointer.y * -9, .08);
+          tilt.y = lerp(tilt.y, pointer.x * 14, .08);
+          const sp = clamp(scrollY / vh, 0, 1);
+          heroProduct.style.transform = window.NS.has3D
+            ? `translate3d(${pointer.x * 14}px, ${scrollY * .28}px, 0) scale(${1 - sp * .12})`
+            : `translate3d(${pointer.x * 14}px, ${scrollY * .28}px, 0) scale(${1 - sp * .12}) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`;
+          if (!window.NS.has3D) heroProduct.style.setProperty("--hx", (pointer.x * 30).toFixed(1));
+          const sy = scrollY * .6;
+          for (let i = 0; i < floatItems.length; i++) {
+            const f = floatItems[i];
+            f.el.style.transform = `translate3d(${(pointer.x * f.d * 60).toFixed(1)}px, ${(pointer.y * f.d * 40 - sy * f.d).toFixed(1)}px, 0)`;
+          }
+          giant.style.setProperty("--gx", `${(-scrollY * .35 + pointer.x * -20).toFixed(1)}px`);
+          heroContent.style.transform = `translate3d(0, ${scrollY * -.12}px, 0)`;
+          heroContent.style.opacity = 1 - sp * 1.4;
+        }
       }
       drawParticles();
     }
 
     // pinned horizontal benefits
-    if (isDesktop() && !reduceMotion) {
-      const rect = benefitsSec.getBoundingClientRect();
-      const total = benefitsSec.offsetHeight - vh;
-      const prog = clamp(-rect.top / total, 0, 1);
-      if (rect.top < vh && rect.bottom > 0) {
-        track.style.transform = `translate3d(${-prog * 75}%, 0, 0)`;
-        bar.style.setProperty("--p", prog.toFixed(4));
-        const idx = clamp(Math.round(prog * 3), 0, 3);
-        benefitsIdx.textContent = `0${idx + 1}`;
-        benefitEls.forEach((el, i) => {
-          const local = clamp(1 - Math.abs(prog * 3 - i), 0, 1);
-          el.querySelector(".benefit-word").style.setProperty("--fill", `${(local * 100).toFixed(1)}%`);
-          el.classList.toggle("is-on", local > .5);
-          el.querySelector(".benefit-body").style.transform = `translate3d(${(prog * 3 - i) * -60}px, 0, 0)`;
-          el.querySelector(".benefit-body").style.opacity = .25 + local * .75;
-        });
+    if (L.desktop && !reduceMotion) {
+      const top = L.benTop - scrollY;
+      const total = L.benH - vh;
+      if (top < vh && top + L.benH > 0) {
+        const prog = clamp(-top / total, 0, 1);
+        if (Math.abs(prog - last.ben) > 0.0002) {
+          last.ben = prog;
+          track.style.transform = `translate3d(${-prog * 75}%, 0, 0)`;
+          bar.style.setProperty("--p", prog.toFixed(4));
+          const idx = clamp(Math.round(prog * 3), 0, 3);
+          const label = `0${idx + 1}`;
+          if (benefitsIdx.textContent !== label) benefitsIdx.textContent = label;
+          benefitParts.forEach(({ el, word, body }, i) => {
+            const local = clamp(1 - Math.abs(prog * 3 - i), 0, 1);
+            word.style.setProperty("--fill", `${(local * 100).toFixed(1)}%`);
+            el.classList.toggle("is-on", local > .5);
+            body.style.transform = `translate3d(${(prog * 3 - i) * -60}px, 0, 0)`;
+            body.style.opacity = .25 + local * .75;
+          });
+        }
       }
     }
 
@@ -583,8 +612,14 @@
     if (finePointer) {
       cursor.rx = lerp(cursor.rx, cursor.x, .18);
       cursor.ry = lerp(cursor.ry, cursor.y, .18);
-      dot.style.transform = `translate3d(${cursor.x}px, ${cursor.y}px, 0)`;
-      ring.style.transform = `translate3d(${cursor.rx}px, ${cursor.ry}px, 0)`;
+      if (cursor.x !== last.cx || cursor.y !== last.cy) {
+        last.cx = cursor.x; last.cy = cursor.y;
+        dot.style.transform = `translate3d(${cursor.x}px, ${cursor.y}px, 0)`;
+      }
+      if (Math.abs(cursor.rx - last.rx) > .1 || Math.abs(cursor.ry - last.ry) > .1) {
+        last.rx = cursor.rx; last.ry = cursor.ry;
+        ring.style.transform = `translate3d(${cursor.rx.toFixed(1)}px, ${cursor.ry.toFixed(1)}px, 0)`;
+      }
     }
 
     requestAnimationFrame(frame);
@@ -596,11 +631,20 @@
   const nav = $("#nav");
   // the nav turns dark over dark sections
   const darkSections = $$("[data-nav='dark']");
-  const updateNav = () => {
-    nav.classList.toggle("is-scrolled", window.scrollY > 40);
-    const y = nav.offsetHeight; // section under the bottom edge of the nav
-    nav.classList.toggle("is-dark", window.scrollY > 40 && darkSections.some((s) => { const r = s.getBoundingClientRect(); return r.top <= y && r.bottom >= y; }));
+  let darkRanges = [];
+  let navH = 70;
+  const measureNav = () => {
+    navH = nav.offsetHeight;
+    darkRanges = darkSections.map((s) => { const r = s.getBoundingClientRect(); return [r.top + window.scrollY, r.bottom + window.scrollY]; });
   };
+  const updateNav = () => {
+    const y = window.scrollY;
+    nav.classList.toggle("is-scrolled", y > 40);
+    const at = y + navH; // section under the bottom edge of the nav
+    nav.classList.toggle("is-dark", y > 40 && darkRanges.some(([a, b]) => a <= at && b >= at));
+  };
+  measureNav();
+  if (window.ResizeObserver) new ResizeObserver(() => { measureNav(); updateNav(); }).observe(document.body);
   window.addEventListener("scroll", updateNav, { passive: true });
 
   const burger = $("#burger");

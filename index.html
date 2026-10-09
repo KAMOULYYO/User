@@ -10,6 +10,11 @@
   <!-- Fonts are self-hosted: no external request can block the page -->
   <link rel="preload" href="assets/fonts/anton-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin />
+  <!-- the import map must come before any module (pre)loading -->
+  <script type="importmap">{ "imports": { "three": "./assets/vendor/three/three.module.min.js" } }</script>
+  <!-- start downloading the 3D engine right away, in parallel with the page -->
+  <link rel="modulepreload" href="assets/vendor/three/three.module.min.js" />
+  <link rel="modulepreload" href="assets/js/jar3d.js" />
   <link rel="stylesheet" href="assets/css/styles.css" />
   <script>
     /* Failsafe: never leave visitors stuck on the loading screen, even if a script fails */
@@ -18,7 +23,6 @@
       if (b && b.classList.contains("is-loading")) { b.classList.remove("is-loading"); b.classList.add("is-loaded"); }
     }, 7000);
   </script>
-  <script type="importmap">{ "imports": { "three": "./assets/vendor/three/three.module.min.js" } }</script>
 </head>
 <body class="is-loading">
 

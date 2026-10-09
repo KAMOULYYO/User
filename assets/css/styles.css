@@ -326,7 +326,6 @@ body.is-loaded .preloader { clip-path: inset(0 0 100% 0); visibility: hidden; }
   background:
     linear-gradient(135deg, rgba(255,255,255,.95) 0%, rgba(255,255,255,.15) 35%, rgba(200,225,240,.25) 60%, rgba(255,255,255,.7) 100%);
   box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.85), inset -8px -10px 18px rgba(150,190,215,.45), inset 6px 6px 14px rgba(255,255,255,.9), 0 20px 30px -10px rgba(60,90,110,.3);
-  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }
 .ice > i::after { content: ""; position: absolute; left: 14px; top: 12px; width: 26px; height: 8px; border-radius: 6px; background: rgba(255,255,255,.95); transform: rotate(-12deg); filter: blur(1px); }
 
@@ -381,8 +380,7 @@ body.is-loaded .preloader { clip-path: inset(0 0 100% 0); visibility: hidden; }
   position: relative; z-index: 6; pointer-events: none;
   display: flex; flex-direction: column; gap: 2px;
   padding: 14px 18px; border-radius: 18px;
-  background: color-mix(in srgb, var(--hero-bg) 55%, transparent);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  background: color-mix(in srgb, var(--hero-bg) 82%, transparent);
   border: 1px solid color-mix(in srgb, var(--hero-ink) 10%, transparent);
   box-shadow: 0 20px 40px -20px rgba(0,0,0,.3);
   opacity: 0; transition: opacity .8s var(--ease), transform .8s var(--ease-out);
@@ -516,7 +514,7 @@ body.is-loaded .hero-switcher.reveal-hero { transition-delay: 1.3s; }
   font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
 }
 .product-tag--neon { background: var(--neon); color: var(--ink); }
-.product-rating { position: absolute; z-index: 2; top: 14px; right: 14px; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,.8); backdrop-filter: blur(6px); }
+.product-rating { position: absolute; z-index: 2; top: 14px; right: 14px; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,.88); }
 .product-rating b { color: var(--gold); }
 .product-body { padding: 20px 8px 0; display: flex; flex-direction: column; gap: 14px; flex: 1; }
 .product-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
@@ -907,7 +905,9 @@ body.is-loaded .hero-switcher.reveal-hero { transition-delay: 1.3s; }
 .jar3d { position: absolute; inset: -14% -30%; z-index: 2; pointer-events: auto; cursor: grab; }
 .jar3d canvas { width: 100% !important; height: 100% !important; display: block; }
 .jar3d.is-dragging { cursor: grabbing; }
-body.has-3d .hero-jars { visibility: hidden; }
+.jar3d canvas, .gold-jar canvas, .creator-jar canvas, .pdp-jar3d canvas { opacity: 0; transition: opacity .7s var(--ease); }
+.jar3d.is-3d canvas, .gold-jar.is-3d canvas, .creator-jar.is-3d canvas, .pdp-jar3d.is-3d canvas { opacity: 1; }
+body.has-3d .hero-jars { opacity: 0; visibility: hidden; transition: opacity .5s, visibility 0s .5s; }
 body.has-3d .hero-product:hover .hero-jars { transform: none; }
 body.has-3d .hero-shadow { left: 20%; right: 20%; }
 .drag-hint {
@@ -1076,7 +1076,7 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; border-radius
 .gold-lead { color: rgba(244,241,236,.7); max-width: 460px; margin: 0 0 30px; }
 .gold-lead b { color: var(--gold-2); }
 .countdown { display: flex; gap: 10px; margin-bottom: 14px; }
-.countdown div { width: 86px; padding: 16px 0 12px; border-radius: 18px; text-align: center; background: rgba(255,255,255,.05); border: 1px solid rgba(201,164,92,.25); backdrop-filter: blur(8px); }
+.countdown div { width: 86px; padding: 16px 0 12px; border-radius: 18px; text-align: center; background: rgba(255,255,255,.06); border: 1px solid rgba(201,164,92,.25); }
 .countdown b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 40px; line-height: 1; color: var(--gold-2); }
 .countdown b.flip { animation: flip .5s var(--ease-out); }
 @keyframes flip { from { transform: translateY(-40%); opacity: 0; } }
@@ -1196,7 +1196,7 @@ input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; border-radius
 .product-name a:hover { color: var(--gold); }
 .fav-btn {
   position: absolute; z-index: 3; right: 14px; bottom: 14px; width: 44px; height: 44px; border-radius: 50%;
-  display: grid; place-items: center; background: rgba(255,255,255,.85); backdrop-filter: blur(6px);
+  display: grid; place-items: center; background: rgba(255,255,255,.92);
   box-shadow: 0 8px 20px -10px rgba(0,0,0,.35); transition: transform .4s var(--ease), background .3s;
 }
 .fav-btn svg { fill: none; stroke: var(--ink); stroke-width: 1.8; transition: fill .3s, stroke .3s, transform .4s var(--ease); }
