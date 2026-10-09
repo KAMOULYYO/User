@@ -131,7 +131,7 @@ function drawLabel(ctx, p, key, flavor) {
   ctx.fillStyle = accentText;
   ctx.font = "800 17px Inter, Arial, sans-serif";
   ctx.letterSpacing = "3px";
-  ctx.fillText(t("LOT TESTÉ EN LABO"), rx - 170, 362);
+  ctx.fillText(t("COMPLÉMENT ALIMENTAIRE"), rx - 170, 362);
   ctx.letterSpacing = "0px";
 }
 

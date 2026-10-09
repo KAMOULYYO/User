@@ -33,10 +33,10 @@
   if (quiz) {
     const PACK_DISCOUNT = 0.15;
     const GOALS = {
-      masse: { label: "Prise de masse", factor: 2, base: ["gainer", "creatine"], extra: "whey", line: "Des calories de qualité et la force pour charger plus lourd." },
-      seche: { label: "Sèche", factor: 2.2, base: ["isolate", "creatine"], extra: "preworkout", line: "Un maximum de protéines, un minimum de calories, et l'énergie pour tenir." },
-      force: { label: "Force", factor: 1.8, base: ["creatine", "whey"], extra: "preworkout", line: "Le duo prouvé pour battre tes records, boosté pour tes grosses séances." },
-      energie: { label: "Énergie", factor: 1.6, base: ["preworkout", "whey"], extra: "creatine", line: "Un focus laser à l'entraînement et une récupération rapide après." },
+      masse: { label: "Prise de masse", factor: 2, base: ["gainer", "creatine"], extra: "whey", line: "Des calories de qualité et des protéines pour soutenir ta prise de masse." },
+      seche: { label: "Sèche", factor: 2.2, base: ["isolate", "creatine"], extra: "preworkout", line: "Beaucoup de protéines pour peu de calories, et de quoi te préparer avant tes séances." },
+      force: { label: "Force", factor: 1.8, base: ["creatine", "whey"], extra: "preworkout", line: "Créatine et whey : le duo classique des séances de force, avec un pre-workout pour les grosses séances." },
+      energie: { label: "Énergie", factor: 1.6, base: ["preworkout", "whey"], extra: "creatine", line: "Un pre-workout avant la séance et des protéines après." },
     };
     const state = { goal: null, freq: null, weight: 75 };
     const steps = $$(".quiz-step", quiz);
