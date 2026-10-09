@@ -10,7 +10,11 @@
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-  const euro = (n) => n.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+  const I18N = window.I18N || { t: (x) => x, tf: (x) => x, locale: "fr-FR", lang: "fr" };
+  const t = I18N.t;
+  const tf = I18N.tf;
+  const euro = (n) => n.toLocaleString(I18N.locale, { style: "currency", currency: "EUR" });
+  const num = (n, d = 0) => n.toLocaleString(I18N.locale, { minimumFractionDigits: d, maximumFractionDigits: d });
 
   /* ------------------------------------------------------------------------
      Product catalogue
@@ -24,6 +28,11 @@
       rating: 4.9, reviews: 2184,
       c: { jar: "#141414", label: "#141414", ink: "#f4efe6", accent: "#c9a45c", lid: "#c9a45c", card: "#e9e2d6" },
       badges: [["25g", "protéines / dose"], ["5,5g", "BCAA naturels"]],
+      goals: ["recup", "masse", "force"],
+      long: "Notre Whey Protein est issue de lait de pâturage européen, filtrée à froid pour préserver les fractions protéiques. 25 g de protéines par dose, 5,5 g de BCAA naturels et une texture onctueuse qui se mélange en quelques secondes, sans grumeaux.",
+      ingredients: "Concentré de protéines de lactosérum (lait) 92 %, cacao maigre en poudre, arômes naturels, émulsifiant : lécithine de tournesol, édulcorant : glucosides de stéviol.",
+      usage: ["1 dose (30 g) dans 250 ml d'eau ou de lait,", "après l'entraînement.", "Jusqu'à 2 doses par jour."],
+      nutrition: [["Énergie", "118 kcal"], ["Protéines", "25 g"], ["Glucides", "1,9 g"], ["dont sucres", "1,2 g"], ["Lipides", "1,4 g"]],
     },
     isolate: {
       name: "Whey Isolate", l1: "WHEY", l2: "ISOLATE", word: "ISO", tag: "Premium",
@@ -33,6 +42,11 @@
       rating: 4.9, reviews: 964,
       c: { jar: "#f4f1eb", label: "#f4f1eb", ink: "#111111", accent: "#c9a45c", lid: "#111111", card: "#ecebe6" },
       badges: [["90%", "taux de protéines"], ["0g", "lactose"]],
+      goals: ["seche", "recup"],
+      long: "Un isolat de lactosérum micro-filtré à 90 % de protéines, pratiquement sans lactose ni matières grasses. Idéal en sèche ou pour les digestions sensibles, avec une texture légère qui se dissout parfaitement à l'eau.",
+      ingredients: "Isolat de protéines de lactosérum (lait) 95 %, arômes naturels, émulsifiant : lécithine de tournesol, édulcorant : glucosides de stéviol.",
+      usage: ["1 dose (30 g) dans 250 ml d'eau,", "après l'entraînement", "ou en collation."],
+      nutrition: [["Énergie", "110 kcal"], ["Protéines", "27 g"], ["Glucides", "0,6 g"], ["Lactose", "0 g"], ["Lipides", "0,3 g"]],
     },
     creatine: {
       name: "Creatine Monohydrate", l1: "CREATINE", l2: "MONOHYDRATE", word: "CREA", tag: "Creapure®",
@@ -42,6 +56,11 @@
       rating: 4.8, reviews: 1730,
       c: { jar: "#f3f3f0", label: "#111111", ink: "#f3f3f0", accent: "#9be22d", lid: "#111111", card: "#e4e9e1" },
       badges: [["5g", "créatine / dose"], ["100%", "Creapure® pure"]],
+      goals: ["force", "masse"],
+      long: "La créatine monohydrate est le complément le plus étudié pour la force et la puissance. Notre poudre micronisée se dissout instantanément et apporte 5 g de créatine pure par dose, sans additif.",
+      ingredients: "Créatine monohydrate micronisée (Creapure®) 100 %. Versions aromatisées : arômes naturels, acidifiant : acide citrique.",
+      usage: ["1 dose (5 g) par jour,", "avec un verre d'eau", "ou votre shaker."],
+      nutrition: [["Créatine", "5 g"], ["Pureté", "99,9 %"], ["Énergie", "0 kcal"], ["Sucres", "0 g"], ["Additifs", "0"]],
     },
     preworkout: {
       name: "Pre-Workout", l1: "PRE", l2: "WORKOUT", word: "PRE", tag: "Nouveau", neon: true,
@@ -51,6 +70,11 @@
       rating: 4.8, reviews: 812,
       c: { jar: "#101010", label: "#101010", ink: "#f4f4f4", accent: "#c6ff3d", lid: "#c6ff3d", card: "#dfe4d6" },
       badges: [["200mg", "caféine naturelle"], ["6g", "citrulline"]],
+      goals: ["energie", "force"],
+      long: "Un pre-workout complet pour des séances explosives : caféine naturelle pour le focus, citrulline pour la congestion et bêta-alanine pour repousser la fatigue. Énergie propre, sans crash.",
+      ingredients: "L-citrulline malate, bêta-alanine, taurine, caféine naturelle (extrait de café vert), arômes naturels, acidifiant : acide citrique, édulcorant : sucralose.",
+      usage: ["1 dose dans 300 ml d'eau,", "20 min avant l'effort.", "Max. 1 dose / jour."],
+      nutrition: [["Caféine", "200 mg"], ["Citrulline", "6 g"], ["Bêta-alanine", "3,2 g"], ["Taurine", "1 g"], ["Sucres", "0 g"]],
     },
     gainer: {
       name: "Mass Gainer", l1: "MASS", l2: "GAINER", word: "MASS", tag: "Volume",
@@ -60,8 +84,41 @@
       rating: 4.7, reviews: 706,
       c: { jar: "#e2d4bd", label: "#e2d4bd", ink: "#161616", accent: "#161616", lid: "#161616", card: "#ebe1d2" },
       badges: [["1250", "kcal / shaker"], ["50g", "protéines"]],
+      goals: ["masse"],
+      long: "Un gainer dense pour les profils qui peinent à prendre du poids : glucides complexes à base d'avoine, 50 g de protéines et 1 250 kcal par shaker, pour une prise de masse de qualité.",
+      ingredients: "Flocons d'avoine en poudre, maltodextrine, concentré de protéines de lactosérum (lait), protéines de lait, cacao maigre, arômes naturels, sel.",
+      usage: ["3 doses (325 g) dans", "600 ml de lait ou d'eau,", "entre les repas."],
+      nutrition: [["Énergie", "1 250 kcal"], ["Protéines", "50 g"], ["Glucides", "230 g"], ["Lipides", "12 g"], ["Fibres", "6 g"]],
     },
   };
+  const SHOP_KEYS = ["whey", "isolate", "creatine", "preworkout", "gainer"];
+  const CUSTOM_FEE = 4.9;
+
+  PRODUCTS.gold = {
+    name: "NUTRISPORT Gold", l1: "GOLD", l2: "ISOLATE", word: "GOLD", tag: "Édition limitée", metal: true,
+    desc: "Whey isolate signature, pot doré numéroté.",
+    flavors: ["Vanille de Madagascar"], sizes: [{ l: "1,5 kg", p: 79.9 }], defSize: 0, rating: 5, reviews: 0,
+    c: { jar: "#c9a45c", label: "#0d0d0d", ink: "#ecd49c", accent: "#c9a45c", lid: "#0d0d0d", card: "#1a1a1a" },
+    badges: [["2026", "pots numérotés"], ["90%", "protéines"]],
+    nutrition: [["Énergie", "112 kcal"], ["Protéines", "27 g"], ["Glucides", "0,8 g"], ["Lactose", "0 g"], ["Lipides", "0,3 g"]],
+  };
+
+  // localised size labels ("1,8 kg" → "1.8 kg" in English)
+  Object.values(PRODUCTS).forEach((p) => p.sizes.forEach((sz) => { sz.l = t(sz.l); }));
+
+  /* Each flavour has its own colour (powder, shaker liquid, label band) */
+  const FLAVOR_COLORS = {
+    "Chocolat Belge": "#5b3a26", "Vanille Bourbon": "#e6cf98", "Caramel Salé": "#c0803c", "Fraise": "#e0647a",
+    "Chocolat Noir": "#3a2418", "Cookies": "#a8865e", "Neutre": "#dcdcd6", "Citron": "#f2d43a",
+    "Fruits rouges": "#b8304a", "Citron Yuzu": "#e2dc3c", "Fruit du dragon": "#e0408a", "Cola glacé": "#5a2a1a",
+    "Cookies & Cream": "#8a8178", "Chocolat": "#6b4228", "Banane": "#f0d860", "Vanille de Madagascar": "#ecd49c",
+  };
+  const flavorColor = (f) => FLAVOR_COLORS[f] || "#c9a45c";
+
+  /* Tiny event bus shared with the effect modules (3D jar, story, lab…) */
+  const bus = new EventTarget();
+  const emit = (type, detail) => bus.dispatchEvent(new CustomEvent(type, { detail }));
+  const sfx = (name) => { try { window.NS && window.NS.sfx && window.NS.sfx.play(name); } catch (_) { /* audio unavailable */ } };
 
   /* Hero slides & their colour themes */
   const SLIDES = [
@@ -76,18 +133,32 @@
      3D jar renderer (inline SVG, unique gradient ids per instance)
      ------------------------------------------------------------------------ */
   let jarUid = 0;
+  /* product object for a personalised jar ("Crée ton pot") */
+  function customProduct(key, custom) {
+    const base = PRODUCTS[key];
+    const metalJar = custom.jar === "#c9a45c";
+    const label = metalJar ? "#0d0d0d" : custom.jar;
+    const ink = isLight(label) ? "#111111" : "#f4efe6";
+    const accent = custom.lid === "#141414" || custom.lid === "#f4f1eb" ? "#c9a45c" : custom.lid;
+    return {
+      ...base, l1: (custom.name || "").toUpperCase() || base.l1, l2: base.l2 === "WORKOUT" ? "PRE-WORKOUT" : base.l2,
+      metal: metalJar,
+      c: { jar: custom.jar, label, ink, accent: accent === label ? "#c9a45c" : accent, lid: custom.lid, card: base.c.card },
+    };
+  }
+
   function jarSVG(key, opts = {}) {
-    const p = PRODUCTS[key];
+    const p = opts.custom ? customProduct(key, opts.custom) : PRODUCTS[key];
     const c = p.c;
     const id = `j${++jarUid}`;
-    const flavor = opts.flavor || p.flavors[0];
+    const flavor = tf(opts.flavor || p.flavors[0]);
     const size = opts.size || p.sizes[p.defSize].l;
     const lightLabel = isLight(c.label);
     const sub = lightLabel ? "rgba(0,0,0,.55)" : "rgba(255,255,255,.6)";
-    const l1Size = p.l1.length > 6 ? 38 : 50;
+    const l1Size = p.l1.length > 8 ? 30 : p.l1.length > 6 ? 38 : 50;
     const l2Size = p.l2.length > 8 ? 17 : 22;
     return `
-<svg viewBox="0 0 260 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pot ${p.name}">
+<svg viewBox="0 0 260 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${t("Pot")} ${p.name}">
   <defs>
     <linearGradient id="${id}s" x1="0" x2="1">
       <stop offset="0" stop-color="#000" stop-opacity=".55"/>
@@ -170,15 +241,33 @@
      ------------------------------------------------------------------------ */
   $$(".preloader-word span").forEach((s, i) => s.style.setProperty("--i", i));
   let loaded = false;
+  let pageReady = false;
+  const preFill = $(".preloader-fill");
+  const prePct = $("#prePct");
+  const preStart = performance.now();
+  const PRE_MIN = reduceMotion ? 0 : 1500;
+  (function preTick(now) {
+    // the jar fills with powder; it waits at 90 % until the page has really loaded
+    const k = clamp((now - preStart) / PRE_MIN, 0, 1);
+    const target = pageReady ? 1 : .9;
+    const v = Math.min(target, 1 - Math.pow(1 - k, 2.2));
+    prePct.textContent = Math.round(v * 100);
+    preFill.style.transform = `translate(${(now / 18) % 60 - 60}px, ${142 - v * 108}px)`;
+    if (v >= 1) return setTimeout(finishLoading, 250);
+    requestAnimationFrame(preTick);
+  })(preStart);
   const finishLoading = () => {
     if (loaded) return;
     loaded = true;
     document.body.classList.remove("is-loading");
     document.body.classList.add("is-loaded");
     document.documentElement.classList.add("has-smooth");
-    setSlide(0, true);
+    try { setSlide(0, true); } catch (err) { console.error(err); }
+    emit("loaded");
   };
-  window.addEventListener("load", () => setTimeout(finishLoading, reduceMotion ? 0 : 1300));
+  window.addEventListener("load", () => { pageReady = true; });
+  // don't wait forever for slow third-party resources: show the site after 3 s max
+  setTimeout(() => { pageReady = true; }, 3000);
 
   /* ------------------------------------------------------------------------
      HERO
@@ -191,7 +280,9 @@
   const floats = $$(".float");
   const root = document.documentElement;
   let current = -1;
+  let heroFlavorSel = null;
   let autoplayTimer = null;
+  const heroFlavors = $("#heroFlavors");
   const AUTOPLAY = 6000;
   root.style.setProperty("--autoplay", AUTOPLAY + "ms");
 
@@ -237,6 +328,7 @@
     for (const k in vars) root.style.setProperty(k, vars[k]);
     $('meta[name="theme-color"]').setAttribute("content", s.bg);
     particleColor = s.particles;
+    heroFlavorSel = p.flavors[0];
 
     // jars
     const slots = $$(".jar-slot", heroJars);
@@ -268,15 +360,17 @@
     info.classList.remove("is-swap"); void info.offsetWidth; info.classList.add("is-swap");
     $("#heroName").textContent = p.name;
     const sz = p.sizes[p.defSize];
-    $("#heroFlavor").textContent = `${p.flavors[0]} · ${sz.l}`;
+    $("#heroFlavor").textContent = `${tf(p.flavors[0])} · ${sz.l}`;
     $("#heroPrice").textContent = euro(sz.p);
+    heroFlavors.innerHTML = p.flavors.map((f, j) =>
+      `<button class="flavor-dot ${j === 0 ? "is-active" : ""}" role="radio" aria-checked="${j === 0}" data-flavor="${f}" style="--c:${flavorColor(f)}" title="${tf(f)}"><i></i><span>${tf(f)}</span></button>`).join("");
 
     // badges
     const [ba, bb] = [$("#badgeA"), $("#badgeB")];
     [ba, bb].forEach((b) => b.classList.add("is-swap"));
     setTimeout(() => {
-      ba.innerHTML = `<strong>${p.badges[0][0]}</strong><span>${p.badges[0][1]}</span>`;
-      bb.innerHTML = `<strong>${p.badges[1][0]}</strong><span>${p.badges[1][1]}</span>`;
+      ba.innerHTML = `<strong>${t(p.badges[0][0])}</strong><span>${t(p.badges[0][1])}</span>`;
+      bb.innerHTML = `<strong>${t(p.badges[1][0])}</strong><span>${t(p.badges[1][1])}</span>`;
       [ba, bb].forEach((b) => b.classList.remove("is-swap"));
     }, first ? 0 : 500);
 
@@ -290,7 +384,32 @@
     $$("button", dots).forEach((d, idx) => d.classList.toggle("is-active", idx === current));
 
     restartAutoplay();
+    if (!first) sfx("whoosh");
+    emit("slide", { index: current, slide: s, key: s.key, product: p, flavor: heroFlavorSel, first });
   }
+
+  function setHeroFlavor(f) {
+    const s = SLIDES[current];
+    const p = PRODUCTS[s.key];
+    heroFlavorSel = f;
+    $$(".flavor-dot", heroFlavors).forEach((b) => {
+      const on = b.dataset.flavor === f;
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-checked", on);
+    });
+    $("#heroFlavor").textContent = `${tf(f)} · ${p.sizes[p.defSize].l}`;
+    // powder, scoop & particles take the flavour colour
+    root.style.setProperty("--powder", flavorColor(f));
+    particleColor = flavorColor(f);
+    $$(".jar-slot", heroJars)[current].querySelectorAll(".jar-flavor").forEach((el) => { el.textContent = tf(f).toUpperCase(); });
+    sfx("click");
+    emit("flavor", { key: s.key, flavor: f, color: flavorColor(f) });
+    restartAutoplay();
+  }
+  heroFlavors.addEventListener("click", (e) => {
+    const b = e.target.closest(".flavor-dot");
+    if (b) setHeroFlavor(b.dataset.flavor);
+  });
 
   function restartAutoplay() {
     clearTimeout(autoplayTimer);
@@ -303,7 +422,12 @@
 
   heroProduct.addEventListener("mouseenter", () => hero.classList.add("is-paused"));
   heroProduct.addEventListener("mouseleave", () => hero.classList.remove("is-paused"));
-  heroProduct.addEventListener("click", () => setSlide(current + 1));
+  let downX = 0;
+  heroProduct.addEventListener("pointerdown", (e) => { downX = e.clientX; });
+  heroProduct.addEventListener("click", (e) => {
+    if (window.NS.has3D || Math.abs(e.clientX - downX) > 6) return; // the 3D jar uses drag-to-rotate
+    setSlide(current + 1);
+  });
 
   // swipe on mobile
   let touchX = null;
@@ -322,7 +446,7 @@
 
   $("#heroBuy").addEventListener("click", (e) => {
     const p = PRODUCTS[SLIDES[current].key];
-    addToCart(SLIDES[current].key, p.flavors[0], p.defSize, e.currentTarget.closest(".hero").querySelector(".jar-slot.is-active svg"));
+    addToCart(SLIDES[current].key, heroFlavorSel || p.flavors[0], p.defSize, e.currentTarget.closest(".hero").querySelector(".jar-slot.is-active svg"));
   });
 
   /* ------------------------------------------------------------------------
@@ -421,7 +545,9 @@
       tilt.y = lerp(tilt.y, pointer.x * 14, .08);
       const sp = clamp(scrollY / vh, 0, 1);
       if (!reduceMotion) {
-        heroProduct.style.transform = `translate3d(${pointer.x * 14}px, ${scrollY * .28}px, 0) scale(${1 - sp * .12}) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`;
+        heroProduct.style.transform = window.NS.has3D
+          ? `translate3d(${pointer.x * 14}px, ${scrollY * .28}px, 0) scale(${1 - sp * .12})`
+          : `translate3d(${pointer.x * 14}px, ${scrollY * .28}px, 0) scale(${1 - sp * .12}) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`;
         heroProduct.style.setProperty("--hx", (pointer.x * 30).toFixed(1));
         root.style.setProperty("--mx", pointer.x.toFixed(3));
         root.style.setProperty("--my", pointer.y.toFixed(3));
@@ -468,9 +594,14 @@
      Nav behaviour
      ------------------------------------------------------------------------ */
   const nav = $("#nav");
-  window.addEventListener("scroll", () => {
+  // the nav turns dark over dark sections
+  const darkSections = $$("[data-nav='dark']");
+  const updateNav = () => {
     nav.classList.toggle("is-scrolled", window.scrollY > 40);
-  }, { passive: true });
+    const y = nav.offsetHeight; // section under the bottom edge of the nav
+    nav.classList.toggle("is-dark", window.scrollY > 40 && darkSections.some((s) => { const r = s.getBoundingClientRect(); return r.top <= y && r.bottom >= y; }));
+  };
+  window.addEventListener("scroll", updateNav, { passive: true });
 
   const burger = $("#burger");
   burger.addEventListener("click", () => {
@@ -489,36 +620,66 @@
      Product cards
      ------------------------------------------------------------------------ */
   const grid = $("#productGrid");
-  ["whey", "creatine", "preworkout", "gainer"].forEach((key, i) => {
+  const FAV_KEY = "nutrisport-favs";
+  let favs = [];
+  try { favs = (JSON.parse(localStorage.getItem(FAV_KEY)) || []).filter((k) => SHOP_KEYS.includes(k)); } catch (_) { favs = []; }
+  const saveFavs = () => { try { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); } catch (_) { /* storage unavailable */ } };
+  function toggleFav(key) {
+    const on = !favs.includes(key);
+    favs = on ? [...favs, key] : favs.filter((k) => k !== key);
+    saveFavs();
+    $$(`[data-fav="${key}"]`).forEach((b) => { b.classList.toggle("is-on", on); b.setAttribute("aria-pressed", on); });
+    sfx(on ? "pop" : "click");
+    if (on) toast(t("{name} ajouté à vos favoris", { name: PRODUCTS[key].name }));
+    emit("favs", { favs });
+    return on;
+  }
+  const heartSVG = '<svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2Z"/></svg>';
+  const ratingTxt = (p) => `<b>★</b> ${num(p.rating, 1)} <span style="opacity:.55">(${num(p.reviews)})</span>`;
+
+  SHOP_KEYS.forEach((key, i) => {
     const p = PRODUCTS[key];
     const state = { flavor: p.flavors[0], size: p.defSize };
     const card = document.createElement("article");
     card.className = "product-card reveal";
-    card.style.setProperty("--delay", `${i * .1}s`);
+    card.dataset.key = key;
+    card.dataset.goals = p.goals.join(" ");
+    card.dataset.search = [p.name, t(p.desc), ...p.flavors, ...p.flavors.map(tf), p.tag, t(p.tag)].join(" ").toLowerCase();
+    card.style.setProperty("--delay", `${(i % 4) * .1}s`);
     card.style.setProperty("--card-bg", p.c.card);
     card.innerHTML = `
       <div class="product-visual" data-word="${p.word}">
-        <span class="product-tag ${p.neon ? "product-tag--neon" : ""}">${p.tag}</span>
-        <span class="product-rating"><b>★</b> ${p.rating.toString().replace(".", ",")} <span style="opacity:.55">(${p.reviews.toLocaleString("fr-FR")})</span></span>
-        <div class="product-jar">${jarSVG(key, { size: p.sizes[p.defSize].l })}</div>
+        <span class="product-tag ${p.neon ? "product-tag--neon" : ""}">${t(p.tag)}</span>
+        <span class="product-rating">${ratingTxt(p)}</span>
+        <a class="product-jar" href="#/p/${key}" aria-label="${t("Voir le produit")} ${p.name}">${jarSVG(key, { size: p.sizes[p.defSize].l })}</a>
+        <button class="fav-btn ${favs.includes(key) ? "is-on" : ""}" data-fav="${key}" aria-pressed="${favs.includes(key)}" aria-label="${t("Ajouter aux favoris")}">${heartSVG}</button>
       </div>
       <div class="product-body">
-        <div class="product-top"><h3 class="product-name">${p.name}</h3><span class="product-price">${euro(p.sizes[p.defSize].p)}</span></div>
-        <p class="product-desc">${p.desc}</p>
-        <div><span class="opt-label">Goût</span><div class="chips" data-opt="flavor">${p.flavors.map((f, j) => `<button class="chip ${j === 0 ? "is-active" : ""}" data-v="${f}">${f}</button>`).join("")}</div></div>
-        <div><span class="opt-label">Format</span><div class="chips" data-opt="size">${p.sizes.map((s, j) => `<button class="chip ${j === p.defSize ? "is-active" : ""}" data-v="${j}">${s.l}</button>`).join("")}</div></div>
-        <button class="btn btn--dark add-btn"><span>Ajouter au panier</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        <div class="product-top"><h3 class="product-name"><a href="#/p/${key}">${p.name}</a></h3><span class="product-price">${euro(p.sizes[p.defSize].p)}</span></div>
+        <p class="product-desc">${t(p.desc)}</p>
+        <div><span class="opt-label">${t("Goût")}</span><div class="chips" data-opt="flavor">${p.flavors.map((f, j) => `<button class="chip ${j === 0 ? "is-active" : ""}" data-v="${f}">${tf(f)}</button>`).join("")}</div></div>
+        <div><span class="opt-label">${t("Format")}</span><div class="chips" data-opt="size">${p.sizes.map((s, j) => `<button class="chip ${j === p.defSize ? "is-active" : ""}" data-v="${j}">${s.l}</button>`).join("")}</div></div>
+        <div class="card-actions">
+          <button class="btn btn--dark add-btn"><span>${t("Ajouter au panier")}</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+          <a class="card-more" href="#/p/${key}">${t("Voir le produit")} →</a>
+        </div>
       </div>`;
     grid.appendChild(card);
 
     card.addEventListener("click", (e) => {
+      const fav = e.target.closest(".fav-btn");
+      if (fav) {
+        const on = toggleFav(key);
+        if (on) { fav.classList.remove("burst"); void fav.offsetWidth; fav.classList.add("burst"); }
+        return;
+      }
       const chip = e.target.closest(".chip");
       if (chip) {
         const group = chip.parentElement;
         $$(".chip", group).forEach((c) => c.classList.toggle("is-active", c === chip));
         if (group.dataset.opt === "flavor") {
           state.flavor = chip.dataset.v;
-          $(".jar-flavor", card).textContent = state.flavor.toUpperCase();
+          $(".jar-flavor", card).textContent = tf(state.flavor).toUpperCase();
         } else {
           state.size = +chip.dataset.v;
           $(".product-price", card).textContent = euro(p.sizes[state.size].p);
@@ -545,8 +706,7 @@
 
   $$(".benefit-link").forEach((a) => a.addEventListener("click", () => {
     const key = a.dataset.product;
-    const idx = ["whey", "creatine", "preworkout", "gainer"].indexOf(key);
-    const card = grid.children[idx];
+    const card = grid.querySelector(`[data-key="${key}"]`);
     if (card) setTimeout(() => { card.animate([{ boxShadow: "0 0 0 0 rgba(198,255,61,.9)" }, { boxShadow: "0 0 0 14px rgba(198,255,61,0)" }], { duration: 1200, delay: 600 }); }, 0);
   }));
 
@@ -557,24 +717,59 @@
   const FREE_SHIPPING = 60;
   let cart = [];
   try { cart = JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch (_) { cart = []; }
-  cart = cart.filter((it) => PRODUCTS[it.key] && PRODUCTS[it.key].sizes[it.size]);
+  cart = cart.filter((it) => PRODUCTS[it.key] && PRODUCTS[it.key].sizes[it.size] && it.key !== "gold");
+  const packPrice = (price, disc) => Math.round(price * (1 - (disc || 0)) * 100) / 100;
+  const basePrice = (it) => PRODUCTS[it.key].sizes[it.size].p + (it.custom ? CUSTOM_FEE : 0);
+  const unitPrice = (it) => packPrice(basePrice(it), it.disc);
+
+  /* promo codes: percentage off the items that are not already in a discounted pack */
+  const PROMOS = { TEAMNS10: 0.1 };
+  const PROMO_KEY = "nutrisport-promo";
+  let promo = null;
+  try { promo = localStorage.getItem(PROMO_KEY); } catch (_) { /* storage unavailable */ }
+  if (!PROMOS[promo]) promo = null;
 
   const cartEl = $("#cart");
   const overlay = $("#overlay");
 
   function saveCart() { try { localStorage.setItem(STORE_KEY, JSON.stringify(cart)); } catch (_) { /* storage unavailable */ } }
 
-  function addToCart(key, flavor, size, sourceEl) {
-    const existing = cart.find((it) => it.key === key && it.flavor === flavor && it.size === size);
-    if (existing) existing.qty++;
-    else cart.push({ key, flavor, size, qty: 1 });
+  function pushItem(key, flavor, size, disc = 0, custom = null, qty = 1) {
+    const sameCustom = (a) => JSON.stringify(a || null) === JSON.stringify(custom);
+    const existing = cart.find((it) => it.key === key && it.flavor === flavor && it.size === size && (it.disc || 0) === disc && sameCustom(it.custom));
+    if (existing) existing.qty += qty;
+    else {
+      const item = { key, flavor, size, qty };
+      if (disc) item.disc = disc;
+      if (custom) item.custom = custom;
+      cart.push(item);
+    }
+  }
+  function bumpCart() {
+    renderCart();
+    const count = $("#cartCount");
+    count.classList.remove("bump"); void count.offsetWidth; count.classList.add("bump");
+    sfx("pop");
+  }
+
+  function addToCart(key, flavor, size, sourceEl, opts = {}) {
+    pushItem(key, flavor, size, 0, opts.custom || null, opts.qty || 1);
     saveCart();
-    flyToCart(sourceEl, () => {
-      renderCart();
-      const count = $("#cartCount");
-      count.classList.remove("bump"); void count.offsetWidth; count.classList.add("bump");
-    });
-    toast(`${PRODUCTS[key].name} · ${flavor} ajouté au panier`);
+    flyToCart(sourceEl, bumpCart);
+    toast(t("{name} · {flavor} ajouté au panier", { name: opts.custom ? `${PRODUCTS[key].name} « ${opts.custom.name || "—"} »` : PRODUCTS[key].name, flavor: tf(flavor) }));
+    emit("cart:add", { key, flavor });
+  }
+
+  /* items: [{key, flavor, size}] — added together with a pack discount */
+  function addPack(items, disc, sourceEls = []) {
+    items.forEach((it) => pushItem(it.key, it.flavor, it.size, disc));
+    saveCart();
+    let pending = Math.max(1, sourceEls.length);
+    const done = () => { if (--pending === 0) bumpCart(); };
+    if (sourceEls.length) sourceEls.forEach((el, i) => setTimeout(() => flyToCart(el, done), i * 140));
+    else done();
+    toast(t("Pack de {n} produits ajouté · -{d} %", { n: items.length, d: Math.round(disc * 100) }));
+    emit("cart:add", { pack: true });
   }
 
   function flyToCart(sourceEl, done) {
@@ -599,36 +794,82 @@
     ], { duration: 850, easing: "cubic-bezier(.6,0,.3,1)" }).onfinish = () => { clone.remove(); done(); };
   }
 
+  function cartTotals() {
+    const count = cart.reduce((n, it) => n + it.qty, 0);
+    const subtotal = cart.reduce((n, it) => n + unitPrice(it) * it.qty, 0);
+    const promoBase = cart.filter((it) => !it.disc).reduce((n, it) => n + unitPrice(it) * it.qty, 0);
+    const discount = promo ? Math.round(promoBase * PROMOS[promo] * 100) / 100 : 0;
+    const afterDiscount = subtotal - discount;
+    const shipping = count === 0 ? 0 : afterDiscount >= FREE_SHIPPING ? 0 : 4.9;
+    return { count, subtotal, discount, afterDiscount, shipping, total: afterDiscount + shipping };
+  }
+
   function renderCart() {
     const items = $("#cartItems");
-    const count = cart.reduce((n, it) => n + it.qty, 0);
-    const subtotal = cart.reduce((n, it) => n + PRODUCTS[it.key].sizes[it.size].p * it.qty, 0);
+    const { count, subtotal, discount, afterDiscount, shipping, total } = cartTotals();
     $("#cartCount").textContent = count;
     $("#cartHeadCount").textContent = `(${count})`;
     $("#cartSubtotal").textContent = euro(subtotal);
-    const left = Math.max(0, FREE_SHIPPING - subtotal);
-    $("#shippingText").innerHTML = left > 0 ? `Plus que <b>${euro(left)}</b> pour la livraison offerte` : `🎉 <b>Livraison offerte</b> débloquée !`;
-    $("#shippingBar").style.width = `${clamp(subtotal / FREE_SHIPPING, 0, 1) * 100}%`;
-    $("#cartShipping").textContent = subtotal === 0 ? "—" : left > 0 ? "4,90 €" : "Offerte";
+    $("#cartDiscountRow").hidden = !discount;
+    $("#cartDiscountLabel").textContent = promo ? t("Code {code}", { code: promo }) : "";
+    $("#cartDiscount").textContent = `−${euro(discount)}`;
+    $("#cartTotal").textContent = euro(total);
+    const left = Math.max(0, FREE_SHIPPING - afterDiscount);
+    $("#shippingText").innerHTML = left > 0 ? t("Plus que <b>{x}</b> pour la livraison offerte", { x: euro(left) }) : t("🎉 <b>Livraison offerte</b> débloquée !");
+    $("#shippingBar").style.width = `${clamp(afterDiscount / FREE_SHIPPING, 0, 1) * 100}%`;
+    $("#cartShipping").textContent = count === 0 ? "—" : shipping ? euro(shipping) : t("Offerte");
     $("#checkoutBtn").disabled = count === 0;
     $("#checkoutBtn").style.opacity = count === 0 ? .4 : 1;
+    renderPromo();
 
     if (!cart.length) {
-      items.innerHTML = `<div class="cart-empty"><strong>Votre panier est vide</strong>Faites le plein de performance.<br><a href="#produits" class="btn btn--dark" data-close-cart><span>Voir les produits</span></a></div>`;
+      items.innerHTML = `<div class="cart-empty"><strong>${t("Votre panier est vide")}</strong>${t("Faites le plein de performance.")}<br><a href="#produits" class="btn btn--dark" data-close-cart><span>${t("Voir les produits")}</span></a></div>`;
       return;
     }
     items.innerHTML = cart.map((it, i) => {
       const p = PRODUCTS[it.key];
       const sz = p.sizes[it.size];
+      const title = it.custom ? `${p.name} <span class="custom-tag">« ${it.custom.name || "—"} »</span>` : p.name;
       return `<div class="cart-item">
-        <div class="cart-thumb" style="--card-bg:${p.c.card}">${jarSVG(it.key, { flavor: it.flavor, size: sz.l })}</div>
-        <div><h4>${p.name}</h4><p>${it.flavor} · ${sz.l}</p>
-          <div class="qty"><button data-dec="${i}" aria-label="Diminuer">−</button><span>${it.qty}</span><button data-inc="${i}" aria-label="Augmenter">+</button></div>
+        <div class="cart-thumb" style="--card-bg:${p.c.card}">${jarSVG(it.key, { flavor: it.flavor, size: sz.l, custom: it.custom })}</div>
+        <div><h4>${title}</h4><p>${tf(it.flavor)} · ${sz.l}${it.disc ? ` <span class="pack-tag">Pack -${Math.round(it.disc * 100)}%</span>` : ""}${it.custom ? ` <span class="pack-tag pack-tag--gold">${t("Perso")} +${euro(CUSTOM_FEE)}</span>` : ""}</p>
+          <div class="qty"><button data-dec="${i}" aria-label="${t("Diminuer")}">−</button><span>${it.qty}</span><button data-inc="${i}" aria-label="${t("Augmenter")}">+</button></div>
         </div>
-        <div class="cart-item-right"><b>${euro(sz.p * it.qty)}</b><button class="remove" data-rm="${i}">Retirer</button></div>
+        <div class="cart-item-right">${it.disc ? `<s>${euro(basePrice(it) * it.qty)}</s>` : ""}<b>${euro(unitPrice(it) * it.qty)}</b><button class="remove" data-rm="${i}">${t("Retirer")}</button></div>
       </div>`;
     }).join("");
   }
+
+  /* ---- promo code form ---- */
+  const promoForm = $("#promoForm");
+  function renderPromo() {
+    $("#promoApplied").hidden = !promo;
+    promoForm.hidden = !!promo;
+    if (promo) $("#promoAppliedCode").textContent = `${promo} · -${Math.round(PROMOS[promo] * 100)} %`;
+  }
+  promoForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const input = $("input", promoForm);
+    const code = input.value.trim().toUpperCase().replace(/\s+/g, "");
+    if (!PROMOS[code]) {
+      promoForm.classList.remove("shake"); void promoForm.offsetWidth; promoForm.classList.add("shake");
+      $("#promoMsg").textContent = code ? t("Ce code n'est pas valide.") : t("Saisissez un code.");
+      sfx("click");
+      return;
+    }
+    promo = code;
+    try { localStorage.setItem(PROMO_KEY, code); } catch (_) { /* storage unavailable */ }
+    input.value = "";
+    $("#promoMsg").textContent = "";
+    sfx("reveal");
+    toast(t("Code {code} appliqué : -{d} %", { code, d: Math.round(PROMOS[code] * 100) }));
+    renderCart();
+  });
+  $("#promoRemove").addEventListener("click", () => {
+    promo = null;
+    try { localStorage.removeItem(PROMO_KEY); } catch (_) { /* storage unavailable */ }
+    renderCart();
+  });
 
   $("#cartItems").addEventListener("click", (e) => {
     const t = e.target.closest("button, a");
@@ -652,13 +893,15 @@
     cartEl.classList.remove("is-open"); overlay.classList.remove("is-open");
     cartEl.setAttribute("aria-hidden", "true");
     document.body.classList.remove("cart-open");
-    document.body.style.overflow = "";
+    document.body.style.overflow = document.body.classList.contains("pdp-open") ? "hidden" : "";
   }
   $("#cartBtn").addEventListener("click", openCart);
   $("#cartClose").addEventListener("click", closeCart);
   overlay.addEventListener("click", closeCart);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeCart(); });
-  $("#checkoutBtn").addEventListener("click", () => toast("Redirection vers le paiement sécurisé… (démo)"));
+  $("#checkoutBtn").addEventListener("click", () => toast(t("Redirection vers le paiement sécurisé… (démo)")));
+
+  $("#cartItems").addEventListener("click", (e) => { if (e.target.closest("[data-inc],[data-dec],[data-rm]")) sfx("click"); });
 
   let toastTimer;
   function toast(msg) {
@@ -672,21 +915,21 @@
   $("#newsletter").addEventListener("submit", (e) => {
     e.preventDefault();
     e.target.reset();
-    toast("Bienvenue dans la Team ! Votre code -10% : TEAMNS10");
+    toast(t("Bienvenue dans la Team ! Votre code -10% : TEAMNS10"));
   });
 
   /* ------------------------------------------------------------------------
      Reviews
      ------------------------------------------------------------------------ */
   const REVIEWS = [
-    ["Thomas R.", "Powerlifter", "La whey chocolat est juste incroyable. Texture onctueuse, aucun ballonnement et +12 kg au squat en 3 mois avec la créatine."],
-    ["Inès M.", "CrossFit", "Le pre-workout yuzu me donne un focus de malade sans les picotements désagréables. Mon WOD du matin n'a jamais été aussi intense."],
-    ["Karim B.", "Bodybuilding", "Enfin une marque transparente : analyses labo dispo pour chaque lot. La qualité se sent dès la première dose."],
-    ["Léa D.", "Running & fitness", "J'ai testé beaucoup de protéines, l'isolate vanille est la seule qui se mélange parfaitement à l'eau. Livrée en 36h !"],
-    ["Hugo P.", "Rugby", "Le mass gainer cookies m'a aidé à prendre 6 kg propres pendant la présaison. Goût top, pas écœurant."],
-    ["Sarah K.", "Coach sportive", "Je la recommande à tous mes clients. Formules courtes, dosages sérieux et un packaging qui claque."],
-    ["Maxime T.", "Calisthenics", "Récupération clairement meilleure depuis que je prends la whey après mes séances. Je m'entraîne 6 jours sur 7 sans courbatures."],
-    ["Nadia F.", "Haltérophilie", "La créatine Creapure est hyper fine, se dissout instantanément. Service client au top, réponse en moins d'une heure."],
+    ["Thomas R.", "Powerlifter", "La whey chocolat est juste incroyable. Texture onctueuse, aucun ballonnement et +12 kg au squat en 3 mois avec la créatine.", "whey"],
+    ["Inès M.", "CrossFit", "Le pre-workout yuzu me donne un focus de malade sans les picotements désagréables. Mon WOD du matin n'a jamais été aussi intense.", "preworkout"],
+    ["Karim B.", "Bodybuilding", "Enfin une marque transparente : analyses labo dispo pour chaque lot. La qualité se sent dès la première dose.", "whey"],
+    ["Léa D.", "Running & fitness", "J'ai testé beaucoup de protéines, l'isolate vanille est la seule qui se mélange parfaitement à l'eau. Livrée en 36h !", "isolate"],
+    ["Hugo P.", "Rugby", "Le mass gainer cookies m'a aidé à prendre 6 kg propres pendant la présaison. Goût top, pas écœurant.", "gainer"],
+    ["Sarah K.", "Coach sportive", "Je la recommande à tous mes clients. Formules courtes, dosages sérieux et un packaging qui claque.", "whey"],
+    ["Maxime T.", "Calisthenics", "Récupération clairement meilleure depuis que je prends la whey après mes séances. Je m'entraîne 6 jours sur 7 sans courbatures.", "whey"],
+    ["Nadia F.", "Haltérophilie", "La créatine Creapure est hyper fine, se dissout instantanément. Service client au top, réponse en moins d'une heure.", "creatine"],
   ];
   const avatarColors = ["#0d0d0d", "#c9a45c", "#5f7a3a", "#8b6236", "#2c2c2c", "#a07a3c"];
   const rows = $("#reviewsRows");
@@ -695,12 +938,12 @@
     row.className = `reviews-row ${r ? "reviews-row--rev" : ""}`;
     const html = set.map(([n, role, txt], i) => `
       <article class="review">
-        <div class="stars" aria-label="5 étoiles">★★★★★</div>
-        <p>“${txt}”</p>
+        <div class="stars" aria-label="${t("5 étoiles")}">★★★★★</div>
+        <p>“${t(txt)}”</p>
         <div class="review-author">
           <span class="avatar" style="background:${avatarColors[(i + r * 3) % avatarColors.length]}">${n.split(" ").map((w) => w[0]).join("")}</span>
-          <div><b>${n}</b><span>${role}</span></div>
-          <span class="verified">✓ Vérifié</span>
+          <div><b>${n}</b><span>${t(role)}</span></div>
+          <span class="verified">✓ ${t("Vérifié")}</span>
         </div>
       </article>`).join("");
     row.innerHTML = html + html; // duplicate for seamless loop
@@ -723,7 +966,7 @@
     const item = document.createElement("div");
     item.className = `faq-item reveal ${i === 0 ? "is-open" : ""}`;
     item.style.setProperty("--delay", `${i * .06}s`);
-    item.innerHTML = `<button class="faq-q" aria-expanded="${i === 0}"><span>${q}</span><span class="faq-icon"></span></button><div class="faq-a"><div><p>${a}</p></div></div>`;
+    item.innerHTML = `<button class="faq-q" aria-expanded="${i === 0}"><span>${t(q)}</span><span class="faq-icon"></span></button><div class="faq-a"><div><p>${t(a)}</p></div></div>`;
     $(".faq-q", item).addEventListener("click", () => {
       const open = !item.classList.contains("is-open");
       $$(".faq-item", faqList).forEach((it) => { it.classList.remove("is-open"); $(".faq-q", it).setAttribute("aria-expanded", "false"); });
@@ -754,7 +997,7 @@
     const end = parseFloat(el.dataset.count);
     const dec = +(el.dataset.decimals || 0);
     const suffix = el.dataset.suffix || "";
-    const fmt = (v) => v.toLocaleString("fr-FR", { minimumFractionDigits: dec, maximumFractionDigits: dec }) + suffix;
+    const fmt = (v) => num(v, dec) + suffix;
     if (reduceMotion) { el.textContent = fmt(end); return; }
     const t0 = performance.now(), dur = 1800;
     const step = (t) => {
@@ -786,6 +1029,18 @@
   }
 
   /* ------------------------------------------------------------------------
+     Public API for the effect modules
+     ------------------------------------------------------------------------ */
+  window.NS = Object.assign(window.NS || {}, {
+    PRODUCTS, SLIDES, SHOP_KEYS, REVIEWS, FLAVOR_COLORS, CUSTOM_FEE, flavorColor, jarSVG, customProduct, isLight, euro, num, t, tf, bus, emit, toast, packPrice,
+    addToCart, addPack, openCart, toggleFav, get favs() { return favs; }, reduceMotion, finePointer, sfx: window.NS && window.NS.sfx,
+    has3D: false,
+    get currentSlide() { return current; },
+    get heroFlavor() { return heroFlavorSel; },
+    pointer,
+  });
+
+  /* ------------------------------------------------------------------------
      Init
      ------------------------------------------------------------------------ */
   sizeCanvas();
@@ -793,5 +1048,5 @@
   window.addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(sizeCanvas, 150); });
   renderCart();
   requestAnimationFrame(frame);
-  if (document.readyState === "complete") setTimeout(finishLoading, 300);
+  if (document.readyState === "complete") pageReady = true;
 })();
