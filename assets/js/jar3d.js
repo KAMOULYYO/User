@@ -182,7 +182,8 @@ function createJar(container, opts = {}) {
   }
   if (!renderer.getContext()) return null;
 
-  const dprMax = isMobile ? 1.5 : 2;
+  // 1.5× is visually indistinguishable here and costs ~45 % fewer pixels than 2×
+  const dprMax = isMobile ? 1.25 : 1.5;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, dprMax));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = opts.exposure || 1.05;
@@ -385,9 +386,16 @@ function easeOutBack(x) { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.
 /* ---------- mount ---------- */
 NS.createJar = createJar;
 NS.bus.dispatchEvent(new CustomEvent("jar3d:ready"));
-const heroMount = document.getElementById("heroJar3d");
-const heroJar = heroMount && createJar(heroMount, { product: NS.SLIDES[Math.max(0, NS.currentSlide)].key });
-if (heroJar) {
+// Creating a WebGL scene compiles shaders and builds the reflections: it is done
+// after the page is shown (hero) or when a section gets close (Gold), never at load.
+const whenIdle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 700 }) : setTimeout(fn, 60));
+
+function mountHero() {
+  const heroMount = document.getElementById("heroJar3d");
+  if (!heroMount) return;
+  const slide = NS.SLIDES[Math.max(0, NS.currentSlide)];
+  const heroJar = createJar(heroMount, { product: slide.key, flavor: NS.heroFlavor || undefined });
+  if (!heroJar) return; // WebGL unavailable: the SVG jars stay
   NS.has3D = true;
   document.body.classList.add("has-3d");
   NS.bus.addEventListener("slide", (e) => heroJar.setProduct(e.detail.key, e.detail.flavor, !e.detail.first));
@@ -397,12 +405,16 @@ if (heroJar) {
   heroMount.addEventListener("pointerleave", () => document.querySelector(".hero").classList.remove("is-paused"));
   heroMount.addEventListener("pointerdown", () => NS.sfx && NS.sfx.play("twist"));
 }
+if (NS.loaded) whenIdle(mountHero);
+else NS.bus.addEventListener("loaded", () => whenIdle(mountHero), { once: true });
 
 const goldMount = document.getElementById("goldJar");
 if (goldMount) {
-  const gold = createJar(goldMount, { product: "gold", autoSpeed: 0.006, startAngle: 0.4, exposure: 1.15, rimColor: "#ffd88a" });
-  if (!gold) {
-    const fb = document.getElementById("goldJarFallback");
-    if (fb) fb.innerHTML = NS.jarSVG("gold");
-  }
+  const fb = document.getElementById("goldJarFallback");
+  if (fb) fb.innerHTML = NS.jarSVG("gold");
+  new IntersectionObserver(([en], obs) => {
+    if (!en.isIntersecting) return;
+    obs.disconnect();
+    whenIdle(() => createJar(goldMount, { product: "gold", autoSpeed: 0.006, startAngle: 0.4, exposure: 1.15, rimColor: "#ffd88a" }));
+  }, { rootMargin: "600px 0px" }).observe(goldMount);
 }

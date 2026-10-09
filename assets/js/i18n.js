@@ -61,7 +61,13 @@
     try { localStorage.setItem(KEY, next); } catch (_) { /* storage unavailable */ }
     const url = new URL(location.href);
     url.searchParams.delete("lang");
-    const go = () => location.replace(url.toString());
+    // same URL (possibly with a #section): replace() would only jump to the anchor, so reload instead
+    const go = () => {
+      if (url.toString() === location.href) location.reload();
+      else location.replace(url.toString());
+      // never leave the curtain over the page if the navigation did not happen
+      setTimeout(() => { const c = document.querySelector(".curtain"); if (c) c.classList.remove("is-in"); }, 3000);
+    };
     const curtain = document.querySelector(".curtain");
     if (curtain && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       curtain.classList.remove("is-out");
