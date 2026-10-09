@@ -91,8 +91,9 @@
     const a = e.target.closest('a[href^="#"]');
     if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey) return;
     const id = a.getAttribute("href");
-    if (id.length < 2) return;
-    const target = document.querySelector(id);
+    if (id.length < 2 || id.startsWith("#/")) return; // "#/p/…" links are product pages
+    let target = null;
+    try { target = document.querySelector(id); } catch (_) { return; }
     if (!target) return;
     e.preventDefault();
     const go = () => window.scrollTo({ top: id === "#top" ? 0 : target.getBoundingClientRect().top + window.scrollY, behavior: "instant" });
@@ -122,8 +123,8 @@
       const left = Math.max(0, DROP - Date.now());
       if (!left) {
         cd.classList.add("is-live");
-        $("#goldDate").textContent = "Disponible maintenant — en quantité limitée";
-        $("#goldNotify span").textContent = "Découvrir l'édition Gold";
+        $("#goldDate").textContent = NS.t("Disponible maintenant — en quantité limitée");
+        $("#goldNotify span").textContent = NS.t("Découvrir l'édition Gold");
         return;
       }
       const v = {
@@ -147,7 +148,74 @@
       const input = $("#newsletter input");
       window.scrollTo({ top: $("#newsletter").getBoundingClientRect().top + window.scrollY - innerHeight / 2, behavior: NS.reduceMotion ? "instant" : "smooth" });
       setTimeout(() => input && input.focus({ preventScroll: true }), 700);
-      NS.toast("Inscris-toi à la newsletter : tu seras prévenu(e) dès l'ouverture du drop Gold.");
+      NS.toast(NS.t("Inscris-toi à la newsletter : tu seras prévenu(e) dès l'ouverture du drop Gold."));
     });
+  }
+
+  /* ------------------------------------------------------------------------
+     Scramble titles: letters decode left to right when a title appears
+     ------------------------------------------------------------------------ */
+  const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&@$";
+  function scramble(el) {
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) if (walker.currentNode.nodeValue.trim()) nodes.push(walker.currentNode);
+    const originals = nodes.map((n) => n.nodeValue);
+    const total = originals.reduce((n, s) => n + s.length, 0);
+    const dur = Math.min(1100, 380 + total * 22);
+    const t0 = performance.now();
+    el.classList.add("is-scrambling");
+    function step(now) {
+      const k = Math.min(1, (now - t0) / dur);
+      let offset = 0;
+      nodes.forEach((n, i) => {
+        const src = originals[i];
+        let out = "";
+        for (let j = 0; j < src.length; j++) {
+          const ch = src[j];
+          const pos = (offset + j) / total;
+          // characters resolve progressively; spaces and punctuation stay put
+          out += k >= pos + 0.12 || !/[A-Za-zÀ-ÿ0-9]/.test(ch) ? ch : GLYPHS[(Math.random() * GLYPHS.length) | 0];
+        }
+        n.nodeValue = out;
+        offset += src.length;
+      });
+      if (k < 1) requestAnimationFrame(step);
+      else { nodes.forEach((n, i) => { n.nodeValue = originals[i]; }); el.classList.remove("is-scrambling"); }
+    }
+    requestAnimationFrame(step);
+  }
+  if (!NS.reduceMotion) {
+    const sio = new IntersectionObserver((entries) => entries.forEach((en) => {
+      if (!en.isIntersecting) return;
+      sio.unobserve(en.target);
+      setTimeout(() => scramble(en.target), 180);
+    }), { threshold: .6 });
+    $$(".section-title, .gold-title, .cta h2, .story-cap h3").forEach((el) => sio.observe(el));
+  }
+
+  /* ------------------------------------------------------------------------
+     Velocity marquee: speeds up and leans with the scroll speed
+     ------------------------------------------------------------------------ */
+  const mTrack = $(".marquee-track");
+  if (mTrack && !NS.reduceMotion) {
+    mTrack.style.animation = "none";
+    let x = 0, vel = 0, lastY = window.scrollY, half = 0, mVisible = true;
+    const measure = () => { half = mTrack.scrollWidth / 2; };
+    measure();
+    window.addEventListener("resize", measure);
+    new IntersectionObserver(([en]) => { mVisible = en.isIntersecting; }).observe(mTrack);
+    (function loop() {
+      requestAnimationFrame(loop);
+      const y = window.scrollY;
+      vel += ((y - lastY) - vel) * 0.12;
+      lastY = y;
+      if (!mVisible) return;
+      const dir = vel < -0.5 ? -1 : 1;
+      x -= (0.9 + Math.min(18, Math.abs(vel) * 0.35)) * dir;
+      if (half) { if (x <= -half) x += half; if (x > 0) x -= half; }
+      const skew = Math.max(-14, Math.min(14, -vel * 0.35));
+      mTrack.style.transform = `translate3d(${x}px, 0, 0) skewX(${skew}deg)`;
+    })();
   }
 })();

@@ -11,10 +11,11 @@
   const $$ = (s, c = document) => [...c.querySelectorAll(s)];
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const play = (n) => NS.sfx && NS.sfx.play(n);
+  const t = NS.t, tf = NS.tf;
 
   function tweenNumber(el, to, { dur = 900, dec = 0, from = parseFloat(el.dataset.v || "0") } = {}) {
     el.dataset.v = to;
-    const fmt = (v) => v.toLocaleString("fr-FR", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+    const fmt = (v) => NS.num(v, dec);
     if (NS.reduceMotion) { el.textContent = fmt(to); return; }
     const t0 = performance.now();
     const step = (t) => {
@@ -52,7 +53,7 @@
         s.classList.toggle("is-before", i < n);
       });
       bar.style.transform = `scaleX(${Math.min(n, 3) / 3})`;
-      count.textContent = n < 3 ? `${n + 1} / 3` : "Ton stack";
+      count.textContent = n < 3 ? `${n + 1} / 3` : t("Ton stack");
       back.style.visibility = n > 0 ? "visible" : "hidden";
       quiz.classList.toggle("is-result", n === 3);
       if (n !== prev) play("click");
@@ -99,16 +100,16 @@
       const res = $("#quizResult");
       res.innerHTML = `
         <div class="result-head">
-          <span class="result-badge">Stack ${g.label}</span>
-          <h3>Ton stack sur-mesure</h3>
-          <p>${g.line} Objectif : <b>${protein} g de protéines / jour</b> pour ${state.weight} kg.</p>
+          <span class="result-badge">${t("Stack {goal}", { goal: t(g.label) })}</span>
+          <h3>${t("Ton stack sur-mesure")}</h3>
+          <p>${t(g.line)} ${t("Objectif : <b>{p} g de protéines / jour</b> pour {w} kg.", { p: protein, w: state.weight })}</p>
         </div>
         <div class="result-items">
           ${items.map((it, i) => {
             const p = NS.PRODUCTS[it.key];
             return `<div class="result-item" style="--i:${i};--card-bg:${p.c.card}">
               <div class="result-jar">${NS.jarSVG(it.key)}</div>
-              <b>${p.name}</b><span>${it.flavor} · ${p.sizes[it.size].l}</span><em>${NS.euro(it.price)}</em>
+              <b>${p.name}</b><span>${tf(it.flavor)} · ${p.sizes[it.size].l}</span><em>${NS.euro(it.price)}</em>
             </div>`;
           }).join('<span class="result-plus">+</span>')}
         </div>
@@ -116,11 +117,11 @@
           <div class="result-price">
             <s>${NS.euro(total)}</s>
             <strong>${NS.euro(pack)}</strong>
-            <span>Tu économises ${NS.euro(total - pack)} (-${PACK_DISCOUNT * 100} %)</span>
+            <span>${t("Tu économises {x} (-{d} %)", { x: NS.euro(total - pack), d: PACK_DISCOUNT * 100 })}</span>
           </div>
           <div class="result-actions">
-            <button class="btn btn--dark" id="quizAdd"><span>Ajouter le pack au panier</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-            <button class="quiz-restart" id="quizRestart">Recommencer le quiz</button>
+            <button class="btn btn--dark" id="quizAdd"><span>${t("Ajouter le pack au panier")}</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+            <button class="quiz-restart" id="quizRestart">${t("Recommencer le quiz")}</button>
           </div>
         </div>`;
       $("#quizAdd").addEventListener("click", () => {
@@ -204,7 +205,7 @@
     }
     liquidG.appendChild(foam);
 
-    flavorsEl.innerHTML = flavors.map((f) => `<button class="chip chip--flavor ${f === flavor ? "is-active" : ""}" data-f="${f}" style="--c:${NS.flavorColor(f)}"><i></i>${f}</button>`).join("");
+    flavorsEl.innerHTML = flavors.map((f) => `<button class="chip chip--flavor ${f === flavor ? "is-active" : ""}" data-f="${f}" style="--c:${NS.flavorColor(f)}"><i></i>${tf(f)}</button>`).join("");
     flavorsEl.addEventListener("click", (e) => {
       const b = e.target.closest(".chip");
       if (!b) return;
@@ -213,8 +214,8 @@
       lab.style.setProperty("--flavor", NS.flavorColor(flavor));
       play("click");
       if (phase === "ready" || phase === "unmixed") paintLiquid();
-      if (phase === "ready") status.textContent = `${flavor} · prêt à boire 💪`;
-      else if (phase === "empty") status.textContent = "Clique sur « Préparer »";
+      if (phase === "ready") status.textContent = t("{f} · prêt à boire 💪", { f: tf(flavor) });
+      else if (phase === "empty") status.textContent = t("Clique sur « Préparer »");
     });
     lab.style.setProperty("--flavor", NS.flavorColor(flavor));
 
@@ -242,7 +243,7 @@
 
     setLevel(0);
     paintLiquid();
-    status.textContent = "Clique sur « Préparer »";
+    status.textContent = t("Clique sur « Préparer »");
 
     fillBtn.addEventListener("click", () => {
       timers.forEach(clearTimeout); timers = [];
@@ -251,19 +252,19 @@
       phase = "water";
       paintLiquid();
       setLevel(0);
-      status.textContent = "Ajout de 300 ml d'eau…";
+      status.textContent = t("Ajout de 300 ml d'eau…");
       play("pour");
       later(() => setLevel(0.62), 60);
       later(() => {
         phase = "unmixed";
-        status.textContent = `Ajout d'une dose · ${flavor}`;
+        status.textContent = t("Ajout d'une dose · {f}", { f: tf(flavor) });
         powderBurst();
         play("scoop");
         later(() => { paintLiquid(); setLevel(0.7); }, 650);
         later(() => {
           shakeBtn.disabled = false;
-          status.textContent = "À toi de secouer !";
-          fillBtn.querySelector("span").textContent = "Recommencer";
+          status.textContent = t("À toi de secouer !");
+          fillBtn.querySelector("span").textContent = t("Recommencer");
         }, 1300);
       }, 1300);
     });
@@ -272,14 +273,14 @@
       if (phase !== "unmixed" && phase !== "ready") return;
       shaker.classList.remove("is-shaking"); void shaker.offsetWidth;
       shaker.classList.add("is-shaking");
-      status.textContent = "Ça secoue…";
+      status.textContent = t("Ça secoue…");
       play("shake");
       later(() => {
         phase = "ready";
         paintLiquid();
         setLevel(0.76);
         shaker.classList.add("is-ready");
-        status.textContent = `${flavor} · prêt à boire 💪`;
+        status.textContent = t("{f} · prêt à boire 💪", { f: tf(flavor) });
       }, 1150);
     });
   }

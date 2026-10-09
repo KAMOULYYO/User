@@ -10,7 +10,7 @@ import { RoomEnvironment } from "../vendor/three/RoomEnvironment.js";
 const NS = window.NS;
 const isMobile = window.matchMedia("(max-width: 900px)").matches;
 
-const NUTRITION = {
+const NUTRITION_FALLBACK = {
   whey: [["Énergie", "118 kcal"], ["Protéines", "25 g"], ["Glucides", "1,9 g"], ["dont sucres", "1,2 g"], ["Lipides", "1,4 g"]],
   isolate: [["Énergie", "110 kcal"], ["Protéines", "27 g"], ["Glucides", "0,6 g"], ["Lactose", "0 g"], ["Lipides", "0,3 g"]],
   creatine: [["Créatine", "5 g"], ["Pureté", "99,9 %"], ["Énergie", "0 kcal"], ["Sucres", "0 g"], ["Additifs", "0"]],
@@ -28,8 +28,9 @@ const USAGE = {
 const LABEL_W = 2048;
 const LABEL_H = 408;
 
-function drawLabel(ctx, key, flavor) {
-  const p = NS.PRODUCTS[key];
+const t = (s) => (NS.t ? NS.t(s) : s);
+
+function drawLabel(ctx, p, key, flavor) {
   const c = p.c;
   const fc = NS.flavorColor(flavor);
   const W = LABEL_W, H = LABEL_H, cx = W / 2;
@@ -60,7 +61,7 @@ function drawLabel(ctx, key, flavor) {
 
   ctx.fillStyle = c.ink;
   ctx.letterSpacing = "4px";
-  const l1Size = p.l1.length > 6 ? 118 : 150;
+  const l1Size = p.l1.length > 7 ? 92 : p.l1.length > 4 ? 118 : 150;
   ctx.font = `${l1Size}px Anton, Impact, sans-serif`;
   ctx.fillText(p.l1, cx + 2, 70 + l1Size + 8);
   const l2Size = p.l2.length > 8 ? 46 : 58;
@@ -72,7 +73,7 @@ function drawLabel(ctx, key, flavor) {
   const fy = 70 + l1Size + l2Size + 50;
   ctx.font = "700 24px Inter, Arial, sans-serif";
   ctx.letterSpacing = "4px";
-  const label = flavor.toUpperCase();
+  const label = t(flavor).toUpperCase();
   const tw = ctx.measureText(label).width + 56;
   roundRect(ctx, cx - tw / 2, fy, tw, 44, 22);
   ctx.fillStyle = fc;
@@ -88,22 +89,22 @@ function drawLabel(ctx, key, flavor) {
   ctx.fillStyle = c.ink;
   ctx.letterSpacing = "1px";
   ctx.font = "800 21px Inter, Arial, sans-serif";
-  ctx.fillText("VALEURS NUTRITIONNELLES", lx - 170, 80);
+  ctx.fillText(t("VALEURS NUTRITIONNELLES"), lx - 170, 80);
   ctx.fillStyle = sub;
   ctx.font = "600 18px Inter, Arial, sans-serif";
   ctx.letterSpacing = "1px";
-  ctx.fillText("Pour 1 dose", lx - 170, 110);
-  (NUTRITION[key] || NUTRITION.whey).forEach(([k, v], i) => {
+  ctx.fillText(t("Pour 1 dose"), lx - 170, 110);
+  (p.nutrition || NUTRITION_FALLBACK[key] || NUTRITION_FALLBACK.whey).forEach(([k, v], i) => {
     const y = 160 + i * 46;
     ctx.fillStyle = rule;
     ctx.fillRect(lx - 170, y - 32, 340, 2);
     ctx.fillStyle = c.ink;
     ctx.font = "600 22px Inter, Arial, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText(k, lx - 170, y);
+    ctx.fillText(t(k), lx - 170, y);
     ctx.textAlign = "right";
     ctx.font = "800 22px Inter, Arial, sans-serif";
-    ctx.fillText(v, lx + 170, y);
+    ctx.fillText(t(v), lx + 170, y);
   });
 
   // ---- right side panel: usage + barcode
@@ -112,11 +113,11 @@ function drawLabel(ctx, key, flavor) {
   ctx.fillStyle = c.ink;
   ctx.font = "800 21px Inter, Arial, sans-serif";
   ctx.letterSpacing = "1px";
-  ctx.fillText("CONSEILS D'UTILISATION", rx - 170, 80);
+  ctx.fillText(t("CONSEILS D'UTILISATION"), rx - 170, 80);
   ctx.fillStyle = sub;
   ctx.font = "500 20px Inter, Arial, sans-serif";
   ctx.letterSpacing = "0px";
-  (USAGE[key] || ["1 dose (30 g) dans 250 ml", "d'eau ou de lait,", "après l'entraînement."]).forEach((t, i) => ctx.fillText(t, rx - 170, 122 + i * 30));
+  (p.usage || USAGE[key] || ["1 dose (30 g) dans 250 ml", "d'eau ou de lait,", "après l'entraînement."]).forEach((line, i) => ctx.fillText(t(line), rx - 170, 122 + i * 30));
   // barcode (deterministic)
   let seed = key.length * 97 + 13;
   let bx = rx - 170;
@@ -130,7 +131,7 @@ function drawLabel(ctx, key, flavor) {
   ctx.fillStyle = accentText;
   ctx.font = "800 17px Inter, Arial, sans-serif";
   ctx.letterSpacing = "3px";
-  ctx.fillText("LOT TESTÉ EN LABO", rx - 170, 362);
+  ctx.fillText(t("LOT TESTÉ EN LABO"), rx - 170, 362);
   ctx.letterSpacing = "0px";
 }
 
@@ -241,15 +242,15 @@ function createJar(container, opts = {}) {
   group.position.y = -0.28;
 
   // ---- materials per product / flavour
-  let state = { key: opts.product || "whey", flavor: null };
-  function applyProduct(k, flavor) {
-    const p = NS.PRODUCTS[k];
-    state = { key: k, flavor: flavor || p.flavors[0] };
+  let state = { key: opts.product || "whey", flavor: null, custom: null };
+  function applyProduct(k, flavor, custom = null) {
+    const p = custom ? NS.customProduct(k, custom) : NS.PRODUCTS[k];
+    state = { key: k, flavor: flavor || p.flavors[0], custom };
     const c = p.c;
     bodyMat.color.set(c.jar);
     bodyMat.metalness = p.metal ? 1 : 0;
     bodyMat.roughness = p.metal ? 0.22 : 0.3;
-    const metallicLid = c.lid === "#c9a45c";
+    const metallicLid = c.lid === "#c9a45c" || c.lid === "#c0c0c0";
     lidMat.color.set(c.lid);
     lidMat.metalness = metallicLid ? 1 : 0;
     lidMat.roughness = metallicLid ? 0.28 : 0.38;
@@ -258,7 +259,8 @@ function createJar(container, opts = {}) {
     paintLabel();
   }
   function paintLabel() {
-    drawLabel(labelCtx, state.key, state.flavor);
+    const p = state.custom ? NS.customProduct(state.key, state.custom) : NS.PRODUCTS[state.key];
+    drawLabel(labelCtx, p, state.key, state.flavor);
     labelTex.needsUpdate = true;
   }
 
@@ -313,6 +315,20 @@ function createJar(container, opts = {}) {
     paintLabel();
     vel += 0.12; // little spin so the change is felt
   }
+  // personalised jar: instant update (called on every keystroke / colour pick)
+  function setCustom(k, flavor, custom, spin = false) {
+    applyProduct(k, flavor, custom);
+    if (spin) vel += 0.2;
+  }
+  // PNG of the jar facing the camera (rendered on demand, no preserveDrawingBuffer needed)
+  function snapshot() {
+    const prev = { rot: spin.rotation.y, tilt: group.rotation.x, z: group.rotation.z, y: group.position.y, s: group.scale.x };
+    spin.rotation.y = 0; group.rotation.x = 0.06; group.rotation.z = 0; group.position.y = -0.28; group.scale.setScalar(1);
+    renderer.render(scene, camera);
+    const url = renderer.domElement.toDataURL("image/png");
+    spin.rotation.y = prev.rot; group.rotation.x = prev.tilt; group.rotation.z = prev.z; group.position.y = prev.y; group.scale.setScalar(prev.s);
+    return url;
+  }
 
   // ---- render loop (only while visible)
   let visible = true;
@@ -350,7 +366,7 @@ function createJar(container, opts = {}) {
     renderer.render(scene, camera);
   }
 
-  applyProduct(state.key, opts.flavor);
+  applyProduct(state.key, opts.flavor, opts.custom || null);
   // re-paint once the display font is ready so the label uses Anton
   if (document.fonts) {
     Promise.race([document.fonts.load("120px Anton"), new Promise((r) => setTimeout(r, 2500))]).then(paintLabel);
@@ -358,7 +374,7 @@ function createJar(container, opts = {}) {
   }
   loop();
   container.classList.add("is-3d");
-  return { setProduct, setFlavor, el };
+  return { setProduct, setFlavor, setCustom, snapshot, el };
 }
 
 function lerp(a, b, t) { return a + (b - a) * t; }
@@ -367,6 +383,8 @@ function easeInCubic(x) { return x * x * x; }
 function easeOutBack(x) { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); }
 
 /* ---------- mount ---------- */
+NS.createJar = createJar;
+NS.bus.dispatchEvent(new CustomEvent("jar3d:ready"));
 const heroMount = document.getElementById("heroJar3d");
 const heroJar = heroMount && createJar(heroMount, { product: NS.SLIDES[Math.max(0, NS.currentSlide)].key });
 if (heroJar) {

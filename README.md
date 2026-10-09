@@ -39,6 +39,16 @@ Chaque push sur `main` redéploie automatiquement le site.
 - Traînée de poudre derrière le curseur, sons synthétisés (désactivés par défaut, bouton haut-parleur), préchargeur où le pot se remplit, rideau de transition entre les sections, menu qui passe en sombre sur les sections sombres.
 - Version allégée sur mobile (moins de particules, rendu 3D moins coûteux, pas de traînée de curseur).
 
+## Boutique, langues et personnalisation
+
+- **Français / anglais** : bouton FR/EN dans le menu, langue mémorisée (et détectée depuis le navigateur à la première visite). Lien direct possible avec `?lang=en`. Les textes anglais sont dans `assets/js/i18n-en.js` : chaque texte français y est associé à sa traduction.
+- **Recherche, filtres et tri** au-dessus des produits (objectif, popularité, note, prix) et **favoris** (cœur sur chaque produit, mémorisés).
+- **Page produit** pour chaque produit, à l'adresse `#/p/whey`, `#/p/isolate`, `#/p/creatine`, `#/p/preworkout`, `#/p/gainer` : pot 3D, goût, format, quantité, prix au kilo, onglets description / nutrition / utilisation / ingrédients, avis et suggestions.
+- **Studio « Crée ton pot »** : prénom sur l'étiquette 3D, couleur du pot et du couvercle, produit et goût ; image 1080 × 1350 à télécharger ou partager ; commande du pot personnalisé (+4,90 €).
+- **Code promo** dans le panier : `TEAMNS10` (-10 % sur les articles hors pack), avec sous-total, réduction, livraison et total.
+- Titres qui se « décodent » à l'apparition et bandeau qui accélère et s'incline selon la vitesse de scroll.
+- Polices Anton et Inter hébergées dans `assets/fonts/` (licence OFL) : aucune ressource externe n'est nécessaire.
+
 ## Structure
 
 ```
@@ -50,6 +60,9 @@ assets/js/story.js  # histoire au scroll (particules)
 assets/js/lab.js    # quiz, calculateur, shaker
 assets/js/fx.js     # traînée de poudre, rideau de transition, compte à rebours
 assets/js/sfx.js    # sons WebAudio
+assets/js/i18n.js   # moteur FR/EN ; i18n-en.js = dictionnaire anglais
+assets/js/shop.js   # recherche, filtres, favoris, pages produit
+assets/js/creator.js # studio « Crée ton pot »
 assets/vendor/three # Three.js r170 (licence MIT)
 ```
 
