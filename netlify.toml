@@ -1,0 +1,20 @@
+# Netlify — site statique, aucune étape de build.
+[build]
+  publish = "."
+  command = ""
+
+# En-têtes de sécurité pour toutes les pages
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# CSS / JS : noms de fichiers non versionnés, on garde un cache court
+# revalidé pour que chaque déploiement soit visible immédiatement.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
