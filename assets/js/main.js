@@ -17,61 +17,84 @@
   const num = (n, d = 0) => n.toLocaleString(I18N.locale, { minimumFractionDigits: d, maximumFractionDigits: d });
 
   /* ------------------------------------------------------------------------
-     Product catalogue
+     Feature switches
+     - reviews: customer reviews, star ratings and review counts. Keep false
+       until the shop has real, verifiable reviews (fake reviews are an
+       unfair commercial practice).
+     - stats: brand figures (athletes, average rating…) — same rule.
+     - provisional: shows "provisional data" notes on product pages until
+       the final supplier specification sheets are entered below.
      ------------------------------------------------------------------------ */
+  const FEATURES = { reviews: false, stats: false, provisional: true };
+  if (!FEATURES.reviews) document.documentElement.classList.add("no-reviews");
+  if (!FEATURES.stats) document.documentElement.classList.add("no-stats");
+
+  /* ------------------------------------------------------------------------
+     Product catalogue
+     Texts use only health claims authorised by the EU (Regulation (EC)
+     1924/2006 and Regulation (EU) 432/2012). Composition and nutrition
+     values are placeholders until the supplier sheets are available.
+     ------------------------------------------------------------------------ */
+  const SUPPLEMENT_WARNINGS = [
+    "Complément alimentaire.",
+    "Ne pas dépasser la dose journalière recommandée.",
+    "Tenir hors de portée des jeunes enfants.",
+    "Les compléments alimentaires ne doivent pas être utilisés comme substituts d'un régime alimentaire varié et équilibré et d'un mode de vie sain.",
+  ];
   const PRODUCTS = {
     whey: {
       name: "Whey Protein", l1: "WHEY", l2: "PROTEIN", word: "WHEY", tag: "Best-seller",
-      desc: "25 g de protéines par dose, BCAA naturels, digestion ultra légère.",
+      desc: "25 g de protéines par dose. Les protéines contribuent au maintien de la masse musculaire.",
       flavors: ["Chocolat Belge", "Vanille Bourbon", "Caramel Salé", "Fraise"],
       sizes: [{ l: "1 kg", p: 32.9 }, { l: "2 kg", p: 54.9 }], defSize: 1,
       rating: 4.9, reviews: 2184,
       c: { jar: "#141414", label: "#141414", ink: "#f4efe6", accent: "#c9a45c", lid: "#c9a45c", card: "#e9e2d6" },
       badges: [["25g", "protéines / dose"], ["5,5g", "BCAA naturels"]],
       goals: ["recup", "masse", "force"],
-      long: "Notre Whey Protein est issue de lait de pâturage européen, filtrée à froid pour préserver les fractions protéiques. 25 g de protéines par dose, 5,5 g de BCAA naturels et une texture onctueuse qui se mélange en quelques secondes, sans grumeaux.",
-      ingredients: "Concentré de protéines de lactosérum (lait) 92 %, cacao maigre en poudre, arômes naturels, émulsifiant : lécithine de tournesol, édulcorant : glucosides de stéviol.",
+      long: "Notre Whey Protein est un concentré de protéines de lactosérum filtré à froid : 25 g de protéines par dose, 5,5 g de BCAA naturellement présents et une texture onctueuse qui se mélange en quelques secondes. Les protéines contribuent à augmenter la masse musculaire et au maintien de la masse musculaire.",
+      ingredients: "Concentré de protéines de lactosérum (<b>lait</b>) 92 %, cacao maigre en poudre, arômes naturels, émulsifiant : lécithine de tournesol, édulcorant : glucosides de stéviol.",
       usage: ["1 dose (30 g) dans 250 ml d'eau ou de lait,", "après l'entraînement.", "Jusqu'à 2 doses par jour."],
       nutrition: [["Énergie", "118 kcal"], ["Protéines", "25 g"], ["Glucides", "1,9 g"], ["dont sucres", "1,2 g"], ["Lipides", "1,4 g"]],
     },
     isolate: {
       name: "Whey Isolate", l1: "WHEY", l2: "ISOLATE", word: "ISO", tag: "Premium",
-      desc: "Isolat micro-filtré 90 %, sans lactose, pour une sèche maîtrisée.",
+      desc: "Isolat micro-filtré à 90 % de protéines, faible teneur en lactose et en matières grasses.",
       flavors: ["Vanille Bourbon", "Chocolat Noir", "Cookies"],
       sizes: [{ l: "900 g", p: 39.9 }, { l: "1,8 kg", p: 64.9 }], defSize: 1,
       rating: 4.9, reviews: 964,
       c: { jar: "#f4f1eb", label: "#f4f1eb", ink: "#111111", accent: "#c9a45c", lid: "#111111", card: "#ecebe6" },
-      badges: [["90%", "taux de protéines"], ["0g", "lactose"]],
+      badges: [["90%", "taux de protéines"], ["27g", "protéines / dose"]],
       goals: ["seche", "recup"],
-      long: "Un isolat de lactosérum micro-filtré à 90 % de protéines, pratiquement sans lactose ni matières grasses. Idéal en sèche ou pour les digestions sensibles, avec une texture légère qui se dissout parfaitement à l'eau.",
-      ingredients: "Isolat de protéines de lactosérum (lait) 95 %, arômes naturels, émulsifiant : lécithine de tournesol, édulcorant : glucosides de stéviol.",
+      long: "Un isolat de lactosérum micro-filtré à 90 % de protéines, à faible teneur en lactose et en matières grasses, avec une texture légère qui se dissout parfaitement à l'eau. Les protéines contribuent au maintien de la masse musculaire.",
+      ingredients: "Isolat de protéines de lactosérum (<b>lait</b>) 95 %, arômes naturels, émulsifiant : lécithine de tournesol, édulcorant : glucosides de stéviol.",
       usage: ["1 dose (30 g) dans 250 ml d'eau,", "après l'entraînement", "ou en collation."],
-      nutrition: [["Énergie", "110 kcal"], ["Protéines", "27 g"], ["Glucides", "0,6 g"], ["Lactose", "0 g"], ["Lipides", "0,3 g"]],
+      nutrition: [["Énergie", "110 kcal"], ["Protéines", "27 g"], ["Glucides", "0,6 g"], ["dont lactose", "0,4 g"], ["Lipides", "0,3 g"]],
     },
     creatine: {
-      name: "Creatine Monohydrate", l1: "CREATINE", l2: "MONOHYDRATE", word: "CREA", tag: "Creapure®",
-      desc: "Créatine pure micronisée, 5 g par dose. Force et puissance prouvées.",
+      name: "Creatine Monohydrate", l1: "CREATINE", l2: "MONOHYDRATE", word: "CREA", tag: "Pure",
+      desc: "Créatine monohydrate micronisée. La créatine augmente la performance physique lors d'exercices brefs et intenses successifs.",
       flavors: ["Neutre", "Citron", "Fruits rouges"],
       sizes: [{ l: "300 g", p: 22.9 }, { l: "500 g", p: 29.9 }], defSize: 1,
       rating: 4.8, reviews: 1730,
       c: { jar: "#f3f3f0", label: "#111111", ink: "#f3f3f0", accent: "#9be22d", lid: "#111111", card: "#e4e9e1" },
-      badges: [["5g", "créatine / dose"], ["100%", "Creapure® pure"]],
+      badges: [["5g", "créatine / dose"], ["100%", "monohydrate"]],
       goals: ["force", "masse"],
-      long: "La créatine monohydrate est le complément le plus étudié pour la force et la puissance. Notre poudre micronisée se dissout instantanément et apporte 5 g de créatine pure par dose, sans additif.",
-      ingredients: "Créatine monohydrate micronisée (Creapure®) 100 %. Versions aromatisées : arômes naturels, acidifiant : acide citrique.",
+      long: "Une créatine monohydrate micronisée qui se dissout facilement et apporte 5 g de créatine par dose, sans additif dans la version neutre. La créatine augmente la performance physique lors d'exercices brefs et intenses successifs ; l'effet bénéfique est obtenu par la consommation journalière de 3 g de créatine.",
+      ingredients: "Créatine monohydrate micronisée 100 %. Versions aromatisées : arômes naturels, acidifiant : acide citrique.",
       usage: ["1 dose (5 g) par jour,", "avec un verre d'eau", "ou votre shaker."],
       nutrition: [["Créatine", "5 g"], ["Pureté", "99,9 %"], ["Énergie", "0 kcal"], ["Sucres", "0 g"], ["Additifs", "0"]],
     },
     preworkout: {
       name: "Pre-Workout", l1: "PRE", l2: "WORKOUT", word: "PRE", tag: "Nouveau", neon: true,
-      desc: "Caféine, citrulline et bêta-alanine. Énergie explosive, zéro crash.",
+      desc: "200 mg de caféine, citrulline et bêta-alanine, à prendre avant l'entraînement. Contient de la caféine.",
       flavors: ["Citron Yuzu", "Fruit du dragon", "Cola glacé"],
       sizes: [{ l: "300 g", p: 29.9 }, { l: "400 g", p: 34.9 }], defSize: 1,
       rating: 4.8, reviews: 812,
       c: { jar: "#101010", label: "#101010", ink: "#f4f4f4", accent: "#c6ff3d", lid: "#c6ff3d", card: "#dfe4d6" },
       badges: [["200mg", "caféine naturelle"], ["6g", "citrulline"]],
       goals: ["energie", "force"],
-      long: "Un pre-workout complet pour des séances explosives : caféine naturelle pour le focus, citrulline pour la congestion et bêta-alanine pour repousser la fatigue. Énergie propre, sans crash.",
+      long: "Un pre-workout complet à prendre 20 minutes avant vos séances : 200 mg de caféine, 6 g de citrulline et 3,2 g de bêta-alanine par dose, dans une formule sans sucre.",
+      warnings: ["Contient de la caféine (200 mg par dose). Déconseillé aux enfants et aux femmes enceintes ou allaitantes.", "Ne pas consommer avec d'autres sources de caféine. Éviter la prise en fin de journée."],
       ingredients: "L-citrulline malate, bêta-alanine, taurine, caféine naturelle (extrait de café vert), arômes naturels, acidifiant : acide citrique, édulcorant : sucralose.",
       usage: ["1 dose dans 300 ml d'eau,", "20 min avant l'effort.", "Max. 1 dose / jour."],
       nutrition: [["Caféine", "200 mg"], ["Citrulline", "6 g"], ["Bêta-alanine", "3,2 g"], ["Taurine", "1 g"], ["Sucres", "0 g"]],
@@ -85,13 +108,14 @@
       c: { jar: "#e2d4bd", label: "#e2d4bd", ink: "#161616", accent: "#161616", lid: "#161616", card: "#ebe1d2" },
       badges: [["1250", "kcal / shaker"], ["50g", "protéines"]],
       goals: ["masse"],
-      long: "Un gainer dense pour les profils qui peinent à prendre du poids : glucides complexes à base d'avoine, 50 g de protéines et 1 250 kcal par shaker, pour une prise de masse de qualité.",
-      ingredients: "Flocons d'avoine en poudre, maltodextrine, concentré de protéines de lactosérum (lait), protéines de lait, cacao maigre, arômes naturels, sel.",
+      long: "Un gainer dense pour les profils qui peinent à prendre du poids : glucides complexes à base d'avoine, 50 g de protéines et 1 250 kcal par portion. Les glucides contribuent à la récupération de la fonction musculaire normale (contraction) après un exercice physique très intense et/ou prolongé.",
+      ingredients: "Flocons d'<b>avoine</b> en poudre, maltodextrine, concentré de protéines de lactosérum (<b>lait</b>), protéines de <b>lait</b>, cacao maigre, arômes naturels, sel.",
       usage: ["3 doses (325 g) dans", "600 ml de lait ou d'eau,", "entre les repas."],
       nutrition: [["Énergie", "1 250 kcal"], ["Protéines", "50 g"], ["Glucides", "230 g"], ["Lipides", "12 g"], ["Fibres", "6 g"]],
     },
   };
   const SHOP_KEYS = ["whey", "isolate", "creatine", "preworkout", "gainer"];
+  SHOP_KEYS.forEach((k) => { PRODUCTS[k].warnings = [...SUPPLEMENT_WARNINGS, ...(PRODUCTS[k].warnings || [])]; });
   const CUSTOM_FEE = 4.9;
 
   PRODUCTS.gold = {
@@ -694,7 +718,7 @@
     card.innerHTML = `
       <div class="product-visual" data-word="${p.word}">
         <span class="product-tag ${p.neon ? "product-tag--neon" : ""}">${t(p.tag)}</span>
-        <span class="product-rating">${ratingTxt(p)}</span>
+        ${FEATURES.reviews ? `<span class="product-rating">${ratingTxt(p)}</span>` : ""}
         <a class="product-jar" href="#/p/${key}" aria-label="${t("Voir le produit")} ${p.name}">${jarSVG(key, { size: p.sizes[p.defSize].l })}</a>
         <button class="fav-btn ${favs.includes(key) ? "is-on" : ""}" data-fav="${key}" aria-pressed="${favs.includes(key)}" aria-label="${t("Ajouter aux favoris")}">${heartSVG}</button>
       </div>
@@ -965,6 +989,7 @@
   /* ------------------------------------------------------------------------
      Reviews
      ------------------------------------------------------------------------ */
+  /* Placeholder testimonials: shown only when FEATURES.reviews is true. Replace with real, verifiable reviews first. */
   const REVIEWS = [
     ["Thomas R.", "Powerlifter", "La whey chocolat est juste incroyable. Texture onctueuse, aucun ballonnement et +12 kg au squat en 3 mois avec la créatine.", "whey"],
     ["Inès M.", "CrossFit", "Le pre-workout yuzu me donne un focus de malade sans les picotements désagréables. Mon WOD du matin n'a jamais été aussi intense.", "preworkout"],
@@ -977,7 +1002,7 @@
   ];
   const avatarColors = ["#0d0d0d", "#c9a45c", "#5f7a3a", "#8b6236", "#2c2c2c", "#a07a3c"];
   const rows = $("#reviewsRows");
-  [REVIEWS.slice(0, 4), REVIEWS.slice(4)].forEach((set, r) => {
+  (FEATURES.reviews ? [REVIEWS.slice(0, 4), REVIEWS.slice(4)] : []).forEach((set, r) => {
     const row = document.createElement("div");
     row.className = `reviews-row ${r ? "reviews-row--rev" : ""}`;
     const html = set.map(([n, role, txt], i) => `
@@ -998,12 +1023,12 @@
      FAQ
      ------------------------------------------------------------------------ */
   const FAQ = [
-    ["Quelle protéine choisir pour débuter ?", "La Whey Protein est idéale pour la majorité des sportifs : 25 g de protéines par dose, excellente digestibilité et un goût premium. Si vous êtes intolérant au lactose ou en sèche, privilégiez l'Isolate."],
-    ["Quand prendre la créatine monohydrate ?", "Le moment importe peu : l'essentiel est la régularité. Prenez 3 à 5 g chaque jour, de préférence avec un repas ou votre shaker post-entraînement, y compris les jours de repos."],
-    ["Vos produits sont-ils testés anti-dopage ?", "Oui. Chaque lot est analysé par un laboratoire indépendant (pureté, métaux lourds, substances interdites). Les certificats sont disponibles sur demande et via le QR code présent sur chaque pot."],
-    ["Quels sont les délais de livraison ?", "Les commandes passées avant 14h sont expédiées le jour même. Comptez 48h en France métropolitaine et 3 à 5 jours en Europe. La livraison est offerte dès 60 € d'achat."],
-    ["Puis-je retourner un produit ?", "Absolument. Vous disposez de 30 jours pour nous retourner un produit non ouvert. Si un goût ne vous plaît pas, notre garantie « Satisfait ou remboursé » s'applique sur votre premier pot."],
-    ["Le pre-workout convient-il aux débutants ?", "Oui, en commençant par une demi-dose pour évaluer votre tolérance à la caféine. Évitez de le consommer moins de 6h avant le coucher."],
+    ["Quelle protéine choisir pour débuter ?", "La Whey Protein convient à la majorité des sportifs : 25 g de protéines par dose et un goût gourmand. Si vous recherchez moins de lactose et de matières grasses, par exemple en sèche, choisissez l'Isolate."],
+    ["Quand prendre la créatine monohydrate ?", "Le moment importe peu : l'essentiel est la régularité. L'effet bénéfique est obtenu avec 3 g de créatine par jour, à prendre par exemple avec un repas ou votre shaker, y compris les jours de repos."],
+    ["Où trouver la composition de vos produits ?", "Sur chaque page produit : ingrédients, allergènes, valeurs nutritionnelles par dose, conseils d'utilisation et avertissements. Les mêmes informations figurent sur l'étiquette de chaque pot."],
+    ["Quels sont les délais et frais de livraison ?", "Nous livrons en France métropolitaine. Les frais et le délai sont indiqués avant la validation de la commande ; la livraison est offerte dès 60 € d'achat."],
+    ["Puis-je retourner un produit ?", "Oui : vous disposez de 14 jours après réception pour exercer votre droit de rétractation sur un produit non ouvert (scellé intact). Les pots personnalisés ne peuvent pas être retournés, sauf défaut. Tous les détails sont dans nos CGV."],
+    ["Le pre-workout convient-il aux débutants ?", "Commencez par une demi-dose pour évaluer votre tolérance à la caféine et évitez de le prendre en fin de journée. Il est déconseillé aux enfants et aux femmes enceintes ou allaitantes."],
   ];
   const faqList = $("#faqList");
   FAQ.forEach(([q, a], i) => {
@@ -1073,10 +1098,29 @@
   }
 
   /* ------------------------------------------------------------------------
+     Contact links & social icons from company.js
+     ------------------------------------------------------------------------ */
+  const CO = window.COMPANY || {};
+  const hasCo = (k) => CO.isMissing && !CO.isMissing(CO[k]) && CO[k];
+  $$("[data-contact]").forEach((a) => {
+    if (hasCo("email")) {
+      a.href = `mailto:${CO.email}`;
+      if (a.dataset.contact === "text") a.textContent = CO.email;
+    } else {
+      a.href = "mentions-legales.html#contact";
+      if (a.dataset.contact === "text") a.textContent = t("Nous contacter");
+    }
+  });
+  $$("[data-social]").forEach((a) => {
+    const url = CO[a.dataset.social];
+    if (url) { a.href = url; a.target = "_blank"; a.rel = "noopener"; } else a.hidden = true;
+  });
+
+  /* ------------------------------------------------------------------------
      Public API for the effect modules
      ------------------------------------------------------------------------ */
   window.NS = Object.assign(window.NS || {}, {
-    PRODUCTS, SLIDES, SHOP_KEYS, REVIEWS, FLAVOR_COLORS, CUSTOM_FEE, flavorColor, jarSVG, customProduct, isLight, euro, num, t, tf, bus, emit, toast, packPrice,
+    FEATURES, PRODUCTS, SLIDES, SHOP_KEYS, REVIEWS, FLAVOR_COLORS, CUSTOM_FEE, flavorColor, jarSVG, customProduct, isLight, euro, num, t, tf, bus, emit, toast, packPrice,
     addToCart, addPack, openCart, toggleFav, get favs() { return favs; }, reduceMotion, finePointer, sfx: window.NS && window.NS.sfx,
     has3D: false,
     get currentSlide() { return current; },

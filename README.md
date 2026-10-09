@@ -67,3 +67,15 @@ assets/vendor/three # Three.js r170 (licence MIT)
 ```
 
 Le catalogue (noms, goûts, formats, prix, couleurs des pots) se modifie dans l'objet `PRODUCTS` de `assets/js/main.js`.
+
+## Avant d'ouvrir la vente (à faire)
+
+Le site peut être public comme vitrine. Avant d'encaisser des commandes :
+
+1. **Fiche entreprise** : remplir `assets/js/company.js` (raison sociale, adresse, SIRET, TVA, e-mail, téléphone, médiateur de la consommation, délai de livraison, adresse de l'hébergeur). Les pages `mentions-legales.html`, `cgv.html` et `confidentialite.html` se remplissent automatiquement ; le bandeau « document provisoire » disparaît quand plus aucun champ ne commence par « [À ».
+2. **Relecture juridique** des trois documents par un professionnel (avocat ou service juridique), notamment le choix du médiateur et les conditions de retour.
+3. **Données produits** : remplacer dans `PRODUCTS` (`assets/js/main.js`) les compositions, valeurs nutritionnelles, poids et prix par ceux des fiches techniques du fabricant, puis passer `FEATURES.provisional` à `false`.
+4. **Déclaration des compléments alimentaires** : en France, chaque produit doit être déclaré auprès de l'administration (téléprocédure Compl'Alim de la DGAL) avant sa mise sur le marché ; l'étiquetage doit reprendre les mentions obligatoires.
+5. **Allégations santé** : les textes du site n'utilisent que des allégations autorisées par l'UE (règlement (UE) n° 432/2012), avec leurs conditions d'emploi. Toute nouvelle allégation doit figurer dans ce registre.
+6. **Avis clients** : ils sont masqués (`FEATURES.reviews = false`). Ne les réactiver qu'avec de vrais avis vérifiables, et remplacer les exemples de `REVIEWS`. Même chose pour les chiffres clés (`FEATURES.stats`).
+7. **Paiement** : à brancher (Stripe par exemple), puis mettre à jour les CGV et la politique de confidentialité.

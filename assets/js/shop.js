@@ -25,6 +25,8 @@
   const state = { q: "", goal: "all", sort: "pop", favOnly: false };
   const searchInput = $("#shopSearch");
   const sortSel = $("#shopSort");
+  // no rating sort while reviews are switched off (hidden <option>s are not reliable on iOS)
+  if (!NS.FEATURES.reviews) { const o = $('option[value="rating"]', sortSel); if (o) o.remove(); }
   const favBtn = $("#favFilter");
   const emptyEl = $("#shopEmpty");
   const countEl = $("#shopCount");
@@ -151,7 +153,7 @@
         <div class="pdp-info">
           <span class="product-tag ${p.neon ? "product-tag--neon" : ""}">${t(p.tag)}</span>
           <h1 class="pdp-name" id="pdpName">${p.name}</h1>
-          <a class="pdp-rating" href="#pdpReviews" data-pdp-anchor><span class="stars">${stars(p.rating)}</span> <b>${num(p.rating, 1)}</b> · ${t("{n} avis", { n: num(p.reviews) })}</a>
+          ${NS.FEATURES.reviews ? `<a class="pdp-rating" href="#pdpReviews" data-pdp-anchor><span class="stars">${stars(p.rating)}</span> <b>${num(p.rating, 1)}</b> · ${t("{n} avis", { n: num(p.reviews) })}</a>` : ""}
           <p class="pdp-desc">${t(p.desc)}</p>
           <div class="pdp-price"><strong id="pdpPrice"></strong><span id="pdpPerKg"></span></div>
           <div class="pdp-opt"><span class="opt-label">${t("Goût")} · <b id="pdpFlavorName"></b></span><div class="pdp-flavors" id="pdpFlavors">
@@ -166,9 +168,9 @@
             <button class="fav-btn fav-btn--lg ${NS.favs.includes(key) ? "is-on" : ""}" data-fav="${key}" id="pdpFav" aria-pressed="${NS.favs.includes(key)}" aria-label="${t("Ajouter aux favoris")}"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2Z"/></svg></button>
           </div>
           <ul class="pdp-trust">
-            <li><span>🚚</span>${t("Livraison 48h, offerte dès 60 €")}</li>
-            <li><span>↩</span>${t("Retours gratuits 30 jours")}</li>
-            <li><span>🧪</span>${t("Chaque lot testé en laboratoire")}</li>
+            <li><span>🚚</span>${t("Livraison offerte dès 60 € en France métropolitaine")}</li>
+            <li><span>↩</span>${t("14 jours pour changer d'avis (produit non ouvert)")}</li>
+            <li><span>📋</span>${t("Composition complète et allergènes affichés")}</li>
           </ul>
         </div>
       </section>
@@ -186,17 +188,18 @@
             <div class="pdp-goals">${p.goals.map((g) => `<span>${t(GOAL_LABELS[g])}</span>`).join("")}</div>
           </div>
           <div class="pdp-panel" data-panel="nutri">
+            ${NS.FEATURES.provisional ? `<span class="pdp-provisional">${t("Fiche provisoire : les valeurs définitives figureront sur l'emballage.")}</span>` : ""}
             <table class="pdp-table"><caption>${t("Valeurs nutritionnelles pour 1 dose")}</caption>
               <tbody>${p.nutrition.map(([k, v]) => `<tr><th scope="row">${t(k)}</th><td>${t(v)}</td></tr>`).join("")}</tbody>
             </table>
           </div>
           <div class="pdp-panel" data-panel="usage"><p class="pdp-usage">${p.usage.map(t).join(" ")}</p>
-            <p class="pdp-note">${t("Ne pas dépasser la dose journalière recommandée. Les compléments alimentaires ne remplacent pas une alimentation variée et équilibrée.")}</p></div>
-          <div class="pdp-panel" data-panel="ingr"><p>${t(p.ingredients)}</p>
-            <p class="pdp-note">${t("Allergènes en gras dans la liste : lait. Fabriqué dans un atelier qui utilise aussi du soja et des fruits à coque.")}</p></div>
+            <div class="pdp-warnings">${p.warnings.map((w) => `<p>${t(w)}</p>`).join("")}</div></div>
+          <div class="pdp-panel" data-panel="ingr">${NS.FEATURES.provisional ? `<span class="pdp-provisional">${t("Fiche provisoire : les valeurs définitives figureront sur l'emballage.")}</span>` : ""}<p>${t(p.ingredients)}</p>
+            <p class="pdp-note">${/<b>/.test(p.ingredients) ? t("Les allergènes sont indiqués en gras.") : t("Aucun allergène majeur parmi les ingrédients.")}</p></div>
         </div>
 
-        <div class="pdp-reviews" id="pdpReviews">
+        <div class="pdp-reviews" id="pdpReviews" ${NS.FEATURES.reviews ? "" : "hidden"}>
           <div class="pdp-reviews-head">
             <h2>${t("Avis clients")}</h2>
             <div class="pdp-score"><strong>${num(p.rating, 1)}</strong><div><span class="stars">${stars(p.rating)}</span><small>${t("{n} avis", { n: num(p.reviews) })}</small></div></div>

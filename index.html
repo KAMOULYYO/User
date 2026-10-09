@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NUTRISPORT — Nutrition sportive premium</title>
-  <meta name="description" content="NUTRISPORT : whey protein, isolate, créatine monohydrate, pre-workout et mass gainer. Nutrition sportive premium, ingrédients testés, livraison 48h." />
+  <meta name="description" content="NUTRISPORT : whey protein, isolate, créatine monohydrate, pre-workout et mass gainer. Nutrition sportive premium, composition transparente, livraison offerte dès 60 €." />
   <meta name="theme-color" content="#0d0d0d" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0d0d'/%3E%3Ctext x='32' y='44' font-family='Arial Black,Arial' font-weight='900' font-size='30' text-anchor='middle' fill='%23c9a45c'%3EN%3C/text%3E%3C/svg%3E" />
   <!-- Fonts are self-hosted: no external request can block the page -->
@@ -65,7 +65,7 @@
       <a href="#lab">Le Lab</a>
       <a href="#studio">Studio</a>
       <a href="#gold">Gold</a>
-      <a href="#avis">Avis</a>
+      <a href="#avis" data-feature="reviews">Avis</a>
       <a href="#faq">FAQ</a>
     </nav>
     <div class="nav-actions">
@@ -173,9 +173,9 @@
         </div>
         <div class="story-captions">
           <div class="story-cap is-on"><span>01</span><h3>Ouvrez le pot.</h3><p>Une poudre ultra-fine, micro-filtrée, qui se dissout en 5 secondes.</p></div>
-          <div class="story-cap"><span>02</span><h3>Libérez la puissance.</h3><p>Chaque dose concentre des protéines de lactosérum européennes testées en laboratoire.</p></div>
-          <div class="story-cap"><span>03</span><h3>25 g de protéines.</h3><p>Par dose. Avec 5,5 g de BCAA naturels et zéro sucre ajouté.</p></div>
-          <div class="story-cap"><span>04</span><h3>Shakez. Performez.</h3><p>Un shaker onctueux, prêt en 10 secondes, pour une récupération optimale.</p></div>
+          <div class="story-cap"><span>02</span><h3>Libérez la puissance.</h3><p>Une poudre de lactosérum filtrée à froid, pensée pour votre shaker après l'entraînement.</p></div>
+          <div class="story-cap"><span>03</span><h3>25 g de protéines.</h3><p>Par dose, avec 5,5 g de BCAA naturellement présents. Les protéines contribuent au maintien de la masse musculaire.</p></div>
+          <div class="story-cap"><span>04</span><h3>Shakez. Performez.</h3><p>Un shaker onctueux, prêt en 10 secondes, à savourer après la séance.</p></div>
         </div>
         <div class="story-progress"><i id="storyBar"></i></div>
         <p class="story-hint">Scrollez pour ouvrir le pot ↓</p>
@@ -210,7 +210,7 @@
               <span class="sr-only">Trier</span>
               <select id="shopSort" aria-label="Trier les produits">
                 <option value="pop">Popularité</option>
-                <option value="rating">Mieux notés</option>
+                <option value="rating" data-feature="reviews">Mieux notés</option>
                 <option value="asc">Prix croissant</option>
                 <option value="desc">Prix décroissant</option>
               </select>
@@ -241,29 +241,29 @@
             <div class="why-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3l3.6 7.4 8.1 1.2-5.9 5.7 1.4 8.1L16 21.6l-7.2 3.8 1.4-8.1-5.9-5.7 8.1-1.2Z"/></svg></div>
             <span class="why-num">01</span>
             <h3>Haute qualité</h3>
-            <p>Matières premières européennes, sourcées auprès des meilleurs producteurs laitiers et fabriquées en France.</p>
+            <p>Des matières premières sélectionnées avec soin et des formules courtes, sans superflu.</p>
           </article>
           <article class="why-card reveal">
             <div class="why-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3h8M13 3v9L6 25a3 3 0 0 0 2.6 4.5h14.8A3 3 0 0 0 26 25l-7-13V3"/><path d="M9.5 20h13"/></svg></div>
             <span class="why-num">02</span>
-            <h3>Ingrédients testés</h3>
-            <p>Chaque lot est analysé par un laboratoire indépendant : pureté, métaux lourds, substances interdites.</p>
+            <h3>Transparence totale</h3>
+            <p>Composition complète, allergènes et valeurs nutritionnelles par dose affichés pour chaque produit.</p>
           </article>
           <article class="why-card reveal">
             <div class="why-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 3 7 18h8l-2 11 11-15h-8l2-11Z"/></svg></div>
             <span class="why-num">03</span>
             <h3>Performance sportive</h3>
-            <p>Des dosages basés sur la science, développés avec des athlètes et des nutritionnistes du sport.</p>
+            <p>Des dosages précis par portion et des conseils d'utilisation clairs, pensés pour l'entraînement.</p>
           </article>
           <article class="why-card reveal">
             <div class="why-icon"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h16v14H3zM19 13h5l5 5v4h-10"/><circle cx="9" cy="24" r="2.5"/><circle cx="24" cy="24" r="2.5"/></svg></div>
             <span class="why-num">04</span>
-            <h3>Livraison rapide</h3>
-            <p>Expédition sous 24h, livraison en 48h partout en France. Offerte dès 60 € d'achat.</p>
+            <h3>Livraison offerte</h3>
+            <p>Livraison en France métropolitaine, offerte dès 60 € d'achat, et 14 jours pour changer d'avis.</p>
           </article>
         </div>
 
-        <div class="stats">
+        <div class="stats" data-feature="stats">
           <div class="stat reveal"><strong data-count="50000" data-suffix="+">0</strong><span>athlètes équipés</span></div>
           <div class="stat reveal"><strong data-count="4.9" data-decimals="1" data-suffix="/5">0</strong><span>note moyenne</span></div>
           <div class="stat reveal"><strong data-count="100" data-suffix="%">0</strong><span>lots testés en labo</span></div>
@@ -285,9 +285,9 @@
             <div class="benefit-word">FORCE</div>
             <div class="benefit-body">
               <span class="benefit-num">01</span>
-              <h3>Soulevez plus lourd, plus longtemps.</h3>
-              <p>La créatine monohydrate augmente les réserves de phosphocréatine musculaire pour des efforts explosifs plus puissants, série après série.</p>
-              <div class="meter"><span>Puissance explosive</span><div class="meter-bar"><i style="--v:.92"></i></div><b>+15%</b></div>
+              <h3>Des efforts brefs et intenses.</h3>
+              <p>La créatine augmente la performance physique lors d'exercices brefs et intenses successifs. L'effet bénéfique est obtenu par la consommation journalière de 3 g de créatine.</p>
+              <div class="meter"><span>Créatine par dose</span><div class="meter-bar"><i style="--v:.92"></i></div><b>5g</b></div>
               <a href="#produits" class="benefit-link" data-product="creatine">Creatine Monohydrate →</a>
             </div>
           </article>
@@ -295,9 +295,9 @@
             <div class="benefit-word">RÉCUP</div>
             <div class="benefit-body">
               <span class="benefit-num">02</span>
-              <h3>Récupérez plus vite, revenez plus fort.</h3>
-              <p>25 g de protéines à absorption rapide et 5,5 g de BCAA pour reconstruire la fibre musculaire dans la fenêtre post-entraînement.</p>
-              <div class="meter"><span>Synthèse protéique</span><div class="meter-bar"><i style="--v:.86"></i></div><b>25g</b></div>
+              <h3>Construisez votre muscle.</h3>
+              <p>Les protéines contribuent à augmenter la masse musculaire et au maintien de la masse musculaire. 25 g de protéines par dose, avec 5,5 g de BCAA naturellement présents.</p>
+              <div class="meter"><span>Protéines par dose</span><div class="meter-bar"><i style="--v:.86"></i></div><b>25g</b></div>
               <a href="#produits" class="benefit-link" data-product="whey">Whey Protein →</a>
             </div>
           </article>
@@ -305,9 +305,9 @@
             <div class="benefit-word">ÉNERGIE</div>
             <div class="benefit-body">
               <span class="benefit-num">03</span>
-              <h3>Un focus laser, une énergie propre.</h3>
-              <p>Caféine naturelle, citrulline et bêta-alanine pour un pic d'énergie sans crash, une congestion maximale et une concentration absolue.</p>
-              <div class="meter"><span>Endurance &amp; focus</span><div class="meter-bar"><i style="--v:.95"></i></div><b>200mg</b></div>
+              <h3>Prêt pour la séance.</h3>
+              <p>200 mg de caféine, 6 g de citrulline et 3,2 g de bêta-alanine par dose, à prendre 20 minutes avant l'entraînement. Contient de la caféine : déconseillé aux enfants et aux femmes enceintes ou allaitantes.</p>
+              <div class="meter"><span>Caféine par dose</span><div class="meter-bar"><i style="--v:.95"></i></div><b>200mg</b></div>
               <a href="#produits" class="benefit-link" data-product="preworkout">Pre-Workout →</a>
             </div>
           </article>
@@ -316,7 +316,7 @@
             <div class="benefit-body">
               <span class="benefit-num">04</span>
               <h3>Prenez du volume, de la qualité.</h3>
-              <p>1 250 kcal par shaker, glucides complexes à index modéré et 50 g de protéines pour une prise de masse dense et maîtrisée.</p>
+              <p>1 250 kcal par portion, des glucides complexes à base d'avoine et 50 g de protéines. Les glucides contribuent à la récupération de la fonction musculaire normale après un exercice physique très intense et/ou prolongé.</p>
               <div class="meter"><span>Apport calorique</span><div class="meter-bar"><i style="--v:.8"></i></div><b>1250</b></div>
               <a href="#produits" class="benefit-link" data-product="gainer">Mass Gainer →</a>
             </div>
@@ -471,7 +471,7 @@
     </section>
 
     <!-- 5. TÉMOIGNAGES -->
-    <section class="section reviews" id="avis">
+    <section class="section reviews" id="avis" data-feature="reviews">
       <div class="container">
         <div class="section-head">
           <div>
@@ -521,8 +521,8 @@
         <div class="faq-aside">
           <p class="eyebrow reveal"><span class="dot"></span> FAQ</p>
           <h2 class="section-title reveal">Questions<br /><span class="muted">fréquentes.</span></h2>
-          <p class="section-lead reveal">Une autre question ? Notre équipe de coachs répond 7j/7 sous 2h.</p>
-          <a href="mailto:hello@nutrisport.fr" class="btn btn--dark reveal magnetic"><span>Contacter un coach</span></a>
+          <p class="section-lead reveal">Une autre question ? Écrivez-nous, nous vous répondrons avec plaisir.</p>
+          <a href="mentions-legales.html#contact" data-contact class="btn btn--dark reveal magnetic"><span>Nous contacter</span></a>
         </div>
         <div class="faq-list" id="faqList"><!-- injected --></div>
       </div>
@@ -541,6 +541,7 @@
               <input type="email" required placeholder="Votre adresse e-mail" aria-label="Adresse e-mail" />
               <button class="btn btn--neon" type="submit"><span>Rejoindre</span></button>
             </form>
+            <p class="newsletter-legal">Désinscription possible à tout moment. Voir notre <a href="confidentialite.html">politique de confidentialité</a>.</p>
           </div>
         </div>
       </div>
@@ -553,24 +554,24 @@
       <div class="footer-top">
         <div class="footer-brand">
           <a href="#top" class="logo logo--light"><span class="logo-mark">N</span><span class="logo-word">NUTRISPORT</span></a>
-          <p>Nutrition sportive premium. Formulée en France, testée en laboratoire, pensée pour les athlètes exigeants.</p>
+          <p>Nutrition sportive premium, pensée pour les athlètes exigeants.</p>
           <div class="socials">
-            <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
-            <a href="#" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 3c.5 2.8 2.4 4.6 5 5"/></svg></a>
-            <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor"/></svg></a>
-            <a href="#" aria-label="Strava"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M10 3 4 15h4l2-4 2 4h4z"/><path d="m14 15 2 4 2-4"/></svg></a>
+            <a href="#" data-social="instagram" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+            <a href="#" data-social="tiktok" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 3c.5 2.8 2.4 4.6 5 5"/></svg></a>
+            <a href="#" data-social="youtube" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor"/></svg></a>
+            <a href="#" data-social="strava" aria-label="Strava"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M10 3 4 15h4l2-4 2 4h4z"/><path d="m14 15 2 4 2-4"/></svg></a>
           </div>
         </div>
         <div class="footer-cols">
           <div><h4>Boutique</h4><a href="#stack">Trouve ton stack</a><a href="#produits">Whey Protein</a><a href="#produits">Isolate</a><a href="#produits">Créatine</a><a href="#produits">Pre-Workout</a><a href="#produits">Mass Gainer</a></div>
-          <div><h4>Marque</h4><a href="#marque">Notre histoire</a><a href="#marque">Qualité &amp; labo</a><a href="#avis">Athlètes</a><a href="#">Programme ambassadeur</a></div>
-          <div><h4>Aide</h4><a href="#faq">FAQ</a><a href="#">Livraison &amp; retours</a><a href="#">Suivi de commande</a><a href="mailto:hello@nutrisport.fr">hello@nutrisport.fr</a></div>
+          <div><h4>Marque</h4><a href="#marque">Pourquoi NUTRISPORT</a><a href="#formule">La formule</a><a href="#studio">Crée ton pot</a><a href="#gold">Édition Gold</a></div>
+          <div><h4>Aide</h4><a href="#faq">FAQ</a><a href="cgv.html#livraison">Livraison</a><a href="cgv.html#retractation">Retours &amp; rétractation</a><a href="mentions-legales.html#contact" data-contact="text">Nous contacter</a></div>
         </div>
       </div>
       <div class="footer-word" aria-hidden="true">NUTRISPORT</div>
       <div class="footer-bottom">
         <span>© 2026 NUTRISPORT. Tous droits réservés.</span>
-        <div class="footer-legal"><a href="#">Mentions légales</a><a href="#">CGV</a><a href="#">Confidentialité</a></div>
+        <div class="footer-legal"><a href="mentions-legales.html">Mentions légales</a><a href="cgv.html">CGV</a><a href="confidentialite.html">Confidentialité</a></div>
         <div class="payments" aria-label="Moyens de paiement"><span>VISA</span><span>MC</span><span>AMEX</span><span>PayPal</span><span>Pay</span></div>
       </div>
     </div>
@@ -608,12 +609,14 @@
       <div class="cart-row cart-row--muted"><span>Livraison</span><span id="cartShipping">—</span></div>
       <div class="cart-row cart-row--total"><span>Total</span><b id="cartTotal">0,00 €</b></div>
       <button class="btn btn--primary btn--block" id="checkoutBtn"><span>Commander</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-      <p class="cart-secure">🔒 Paiement 100% sécurisé · Retours gratuits 30 jours</p>
+      <p class="cart-secure">🔒 Paiement sécurisé · 14 jours pour changer d'avis</p>
+      <p class="cart-legal">En passant commande, vous acceptez nos <a href="cgv.html">conditions générales de vente</a>.</p>
     </div>
   </aside>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <script src="assets/js/company.js"></script>
   <script src="assets/js/i18n-en.js"></script>
   <script src="assets/js/i18n.js"></script>
   <script src="assets/js/main.js"></script>
