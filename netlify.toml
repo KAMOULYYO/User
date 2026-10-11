@@ -34,3 +34,22 @@
   for = "/assets/fonts/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Fichiers d'outillage (skills pour agents IA) : présents dans le dépôt, jamais servis
+[[redirects]]
+  from = "/.agents/*"
+  to = "/404"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/.claude/*"
+  to = "/404"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/skills-lock.json"
+  to = "/404"
+  status = 404
+  force = true
