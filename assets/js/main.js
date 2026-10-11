@@ -14,6 +14,8 @@
   const t = I18N.t;
   const tf = I18N.tf;
   const euro = (n) => n.toLocaleString(I18N.locale, { style: "currency", currency: "EUR" });
+  /* escape text before it goes into an HTML/SVG template string */
+  const esc = (v) => String(v).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
   const num = (n, d = 0) => n.toLocaleString(I18N.locale, { minimumFractionDigits: d, maximumFractionDigits: d });
 
   /* ------------------------------------------------------------------------
@@ -220,10 +222,10 @@
     <rect x="30" y="274" width="200" height="4" fill="${c.accent}"/>
 
     <text x="130" y="164" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="10" letter-spacing="4.5" fill="${c.accent === "#161616" ? c.ink : c.accent}">NUTRISPORT</text>
-    <text x="130" y="${164 + l1Size + 2}" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="${l1Size}" letter-spacing="1" fill="${c.ink}">${p.l1}</text>
-    <text x="130" y="${164 + l1Size + 6 + l2Size}" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="${l2Size}" letter-spacing="3" fill="${c.ink}">${p.l2}</text>
+    <text x="130" y="${164 + l1Size + 2}" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="${l1Size}" letter-spacing="1" fill="${c.ink}">${esc(p.l1)}</text>
+    <text x="130" y="${164 + l1Size + 6 + l2Size}" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="${l2Size}" letter-spacing="3" fill="${c.ink}">${esc(p.l2)}</text>
     <rect x="112" y="${172 + l1Size + l2Size}" width="36" height="2" rx="1" fill="${c.accent === "#161616" ? c.ink : c.accent}"/>
-    <text class="jar-flavor" x="130" y="${190 + l1Size + l2Size}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="600" font-size="9.5" letter-spacing="1.5" fill="${sub}">${flavor.toUpperCase()}</text>
+    <text class="jar-flavor" x="130" y="${190 + l1Size + l2Size}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="600" font-size="9.5" letter-spacing="1.5" fill="${sub}">${esc(flavor.toUpperCase())}</text>
     <text class="jar-size" x="130" y="300" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="700" font-size="9" letter-spacing="2" fill="${isLight(c.jar) ? "rgba(0,0,0,.45)" : "rgba(255,255,255,.5)"}">${size.toUpperCase()} · NET WT</text>
 
     <!-- cylinder shading -->
@@ -785,7 +787,12 @@
   const FREE_SHIPPING = 60;
   let cart = [];
   try { cart = JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch (_) { cart = []; }
-  cart = cart.filter((it) => PRODUCTS[it.key] && PRODUCTS[it.key].sizes[it.size] && it.key !== "gold");
+  /* the cart comes back from localStorage: only keep items that match the catalogue */
+  const HEX = /^#[0-9a-f]{6}$/i;
+  const validCustom = (c) => c == null || (typeof c === "object" && typeof c.name === "string" && /^[A-Z0-9À-ÖØ-Ý \-]{0,10}$/.test(c.name) && HEX.test(c.jar) && HEX.test(c.lid));
+  if (!Array.isArray(cart)) cart = [];
+  cart = cart.filter((it) => it && PRODUCTS[it.key] && PRODUCTS[it.key].sizes[it.size] && it.key !== "gold"
+    && PRODUCTS[it.key].flavors.includes(it.flavor) && Number.isInteger(it.qty) && it.qty > 0 && (it.disc == null || typeof it.disc === "number") && validCustom(it.custom));
   const packPrice = (price, disc) => Math.round(price * (1 - (disc || 0)) * 100) / 100;
   const basePrice = (it) => PRODUCTS[it.key].sizes[it.size].p + (it.custom ? CUSTOM_FEE : 0);
   const unitPrice = (it) => packPrice(basePrice(it), it.disc);
@@ -897,10 +904,10 @@
     items.innerHTML = cart.map((it, i) => {
       const p = PRODUCTS[it.key];
       const sz = p.sizes[it.size];
-      const title = it.custom ? `${p.name} <span class="custom-tag">« ${it.custom.name || "—"} »</span>` : p.name;
+      const title = it.custom ? `${p.name} <span class="custom-tag">« ${esc(it.custom.name || "—")} »</span>` : p.name;
       return `<div class="cart-item">
         <div class="cart-thumb" style="--card-bg:${p.c.card}">${jarSVG(it.key, { flavor: it.flavor, size: sz.l, custom: it.custom })}</div>
-        <div><h4>${title}</h4><p>${tf(it.flavor)} · ${sz.l}${it.disc ? ` <span class="pack-tag">Pack -${Math.round(it.disc * 100)}%</span>` : ""}${it.custom ? ` <span class="pack-tag pack-tag--gold">${t("Perso")} +${euro(CUSTOM_FEE)}</span>` : ""}</p>
+        <div><h4>${title}</h4><p>${esc(tf(it.flavor))} · ${sz.l}${it.disc ? ` <span class="pack-tag">Pack -${Math.round(it.disc * 100)}%</span>` : ""}${it.custom ? ` <span class="pack-tag pack-tag--gold">${t("Perso")} +${euro(CUSTOM_FEE)}</span>` : ""}</p>
           <div class="qty"><button data-dec="${i}" aria-label="${t("Diminuer")}">−</button><span>${it.qty}</span><button data-inc="${i}" aria-label="${t("Augmenter")}">+</button></div>
         </div>
         <div class="cart-item-right">${it.disc ? `<s>${euro(basePrice(it) * it.qty)}</s>` : ""}<b>${euro(unitPrice(it) * it.qty)}</b><button class="remove" data-rm="${i}">${t("Retirer")}</button></div>

@@ -11,6 +11,10 @@
     X-Frame-Options = "DENY"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    # Tout est auto-hébergé. Les deux empreintes sha256 autorisent les scripts inline
+    # de index.html (import map + failsafe du preloader) : à recalculer si on les modifie.
+    # style 'unsafe-inline' : les templates JS posent des attributs style="--var:…".
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'sha256-KzjZ2SiVMnj8BgOLgrAbku/wfrBnGxvOEscmkYH05zE=' 'sha256-0FRiXKMv318g+iDJx9A1NV+y1nSAUUzkKjSk03qnabU='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
 
 # CSS / JS : noms de fichiers non versionnés, on garde un cache court
 # revalidé pour que chaque déploiement soit visible immédiatement.
